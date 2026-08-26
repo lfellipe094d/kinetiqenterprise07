@@ -201,7 +201,7 @@
         .nav-item.active a { color: var(--primary); background: rgba(249, 115, 22, 0.12); }
         .nav-item a i { font-size: 1.1rem; width: 22px; text-align: center; }
 
-        .sidebar-user { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border-color); }
+        .sidebar-user { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border-color); cursor: pointer; }
         .user-info { display: flex; align-items: center; gap: 10px; overflow: hidden; }
         .user-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
         .user-details h4 { font-size: 0.85rem; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -274,9 +274,72 @@
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: 0.4s; }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(24px); }
+
+        /* MODAL DE PERFIL FLUTUANTE */
+        #modal-perfil {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
+
+    <div id="modal-perfil">
+        <div class="modal-content-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 1.1rem;">Meu Perfil e Segurança</h3>
+                <button onclick="fecharModalPerfil()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="form-update-perfil" onsubmit="salvarAlteracoesPerfil(event)">
+                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; gap: 10px;">
+                    <img id="preview-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar Preview" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+                    <label for="input-file-avatar" style="font-size: 0.8rem; color: var(--primary); cursor: pointer; font-weight: 600;">
+                        <i class="fa-solid fa-camera"></i> Alterar Foto de Perfil
+                    </label>
+                    <input type="file" id="input-file-avatar" accept="image/*" style="display: none;" onchange="previewNovaFoto(event)">
+                </div>
+
+                <div class="form-control">
+                    <label>Nome Completo</label>
+                    <input type="text" id="perfil-nome" placeholder="Seu Nome" required>
+                </div>
+
+                <div class="form-control">
+                    <label>E-mail de Acesso</label>
+                    <input type="email" id="perfil-email" placeholder="seu@email.com" required>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                <h4 style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-main);">Alterar Senha</h4>
+                
+                <div class="form-control">
+                    <label>Nova Senha</label>
+                    <input type="password" id="perfil-nova-senha" placeholder="Deixe em branco para não alterar">
+                </div>
+
+                <button type="submit" class="btn-primary-custom" style="margin-top: 10px;">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
 
     <div id="login-screen">
         <div class="login-card">
@@ -429,7 +492,7 @@
                 </ul>
             </div>
 
-            <div class="sidebar-user">
+            <div class="sidebar-user" onclick="abrirModalPerfil()" title="Editar Perfil">
                 <div class="user-info">
                     <img id="user-avatar" src="https://via.placeholder.com/150" alt="Avatar">
                     <div class="user-details">
@@ -437,7 +500,7 @@
                         <span id="user-role-display">Operador</span>
                     </div>
                 </div>
-                <button class="btn-logout" onclick="logout()" title="Sair"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                <button class="btn-logout" onclick="event.stopPropagation(); logout();" title="Sair"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
             </div>
         </aside>
 
@@ -861,7 +924,7 @@
 
         function handleEmailLogin(event) {
             event.preventDefault();
-            entrarNoSistema("Operador Kinetiq", "Operador Técnico", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", "operator");
+            entrarNoSistema("Carlos Silva", "Operador Técnico", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", "operator");
         }
 
         function handleAdminLogin(event) {
@@ -924,12 +987,54 @@
             dropdown.classList.toggle('show');
         }
 
-        window.onclick = function() {
-            document.getElementById('notif-dropdown').classList.remove('show');
+        window.onclick = function(event) {
+            if (!event.target.closest('.notification-btn') && !event.target.closest('.notifications-dropdown')) {
+                document.getElementById('notif-dropdown').classList.remove('show');
+            }
         }
 
         function toggleTheme() {
             document.body.classList.toggle('light-theme');
+        }
+
+        // Funções de Gestão de Perfil (Upload de Foto, Dados e Senha)
+        function abrirModalPerfil() {
+            document.getElementById('perfil-nome').value = document.getElementById('user-name-display').innerText;
+            document.getElementById('preview-avatar').src = document.getElementById('user-avatar').src;
+            document.getElementById('modal-perfil').style.display = 'flex';
+        }
+
+        function fecharModalPerfil() {
+            document.getElementById('modal-perfil').style.display = 'none';
+        }
+
+        function previewNovaFoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-avatar').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function salvarAlteracoesPerfil(event) {
+            event.preventDefault();
+            
+            const novoNome = document.getElementById('perfil-nome').value;
+            const novaFoto = document.getElementById('preview-avatar').src;
+            const novaSenha = document.getElementById('perfil-nova-senha').value;
+
+            document.getElementById('user-name-display').innerText = novoNome;
+            document.getElementById('user-avatar').src = novaFoto;
+
+            if(novaSenha) {
+                console.log("Senha alterada com sucesso.");
+            }
+
+            alert("Perfil atualizado com sucesso!");
+            fecharModalPerfil();
         }
 
         async function carregarDadosIniciais() {
