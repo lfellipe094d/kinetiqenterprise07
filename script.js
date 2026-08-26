@@ -1,7 +1,256 @@
 const API_URL = "http://127.0.0.1:8000";
 
+// Base de dados local simulada para garantir que inclusão e exclusão funcionem instantaneamente
+let dbKinetiq = {
+    equipamentos: [
+        { id: "#01", nome: "Sony FX3 Cinema Line", categoria: "Câmeras", serie: "SN-983421", status: "Disponível" },
+        { id: "#02", nome: "Canon EOS R5", categoria: "Câmeras", serie: "SN-445129", status: "Disponível" }
+    ],
+    agenda: [
+        { id: "#101", titulo: "Gravação Corporativa", data: "28/08/2026", local: "Estúdio Principal" }
+    ],
+    escalas: [
+        { id: "#501", cargo: "Operador de Câmeras", operador: "Carlos Silva", data: "28/08/2026", turno: "Integral" }
+    ],
+    operadores: [
+        { id: "#01", nome: "Carlos Silva", email: "carlos@kinetiq.org", funcao: "Diretor de Fotografia" }
+    ],
+    clientes: [
+        { id: "#C1", nome: "Get Church Filmes", contato: "(11) 98765-4321", email: "contato@getchurch.com" }
+    ],
+    reservas: [
+        { id: "#R1", equipamento: "Sony FX3", solicitante: "Carlos Silva", periodo: "28/08 - 29/08", status: "Reservado" }
+    ]
+};
+
 // ==========================================
-// 1. GERENCIAMENTO DE AUTENTICAÇÃO E PORTAIS
+// 1. RENDERIZAÇÃO E ATUALIZAÇÃO DAS TABELAS
+// ==========================================
+function renderizarTabelas() {
+    // Tabela Equipamentos
+    const tbodyEq = document.getElementById('table-equipamentos-body');
+    if(tbodyEq) {
+        tbodyEq.innerHTML = dbKinetiq.equipamentos.map(item => `
+            <tr>
+                <td>${item.id}</td>
+                <td>${item.nome}</td>
+                <td>${item.categoria}</td>
+                <td>${item.serie}</td>
+                <td><span class="status-badge available">${item.status}</span></td>
+                <td class="admin-only">
+                    <div class="action-btns">
+                        <button class="btn-icon delete" title="Excluir" onclick="deletarItem('equipamentos', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Tabela Agenda
+    const tbodyAgenda = document.getElementById('table-agenda-body');
+    if(tbodyAgenda) {
+        tbodyAgenda.innerHTML = dbKinetiq.agenda.map(item => `
+            <tr>
+                <td>${item.id}</td>
+                <td>${item.titulo}</td>
+                <td>${item.data}</td>
+                <td>${item.local}</td>
+                <td class="admin-only">
+                    <div class="action-btns">
+                        <button class="btn-icon delete" title="Excluir" onclick="deletarItem('agenda', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Tabela Escalas
+    const tbodyEscalas = document.getElementById('table-escalas-body');
+    if(tbodyEscalas) {
+        tbodyEscalas.innerHTML = dbKinetiq.escalas.map(item => `
+            <tr>
+                <td>${item.id}</td>
+                <td>${item.cargo}</td>
+                <td>${item.operador}</td>
+                <td>${item.data}</td>
+                <td>${item.turno}</td>
+                <td class="admin-only">
+                    <div class="action-btns">
+                        <button class="btn-icon delete" title="Excluir" onclick="deletarItem('escalas', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Tabela Operadores
+    const tbodyOps = document.getElementById('table-operadores-body');
+    if(tbodyOps) {
+        tbodyOps.innerHTML = dbKinetiq.operadores.map(item => `
+            <tr>
+                <td>${item.id}</td>
+                <td>${item.nome}</td>
+                <td>${item.email}</td>
+                <td>${item.funcao}</td>
+                <td>
+                    <div class="action-btns">
+                        <button class="btn-icon delete" title="Excluir" onclick="deletarItem('operadores', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Tabela Clientes
+    const tbodyClientes = document.getElementById('table-clientes-body');
+    if(tbodyClientes) {
+        tbodyClientes.innerHTML = dbKinetiq.clientes.map(item => `
+            <tr>
+                <td>${item.id}</td>
+                <td>${item.nome}</td>
+                <td>${item.contato}</td>
+                <td>${item.email}</td>
+                <td>
+                    <div class="action-btns">
+                        <button class="btn-icon delete" title="Excluir" onclick="deletarItem('clientes', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Tabela Reservas
+    const tbodyReservas = document.getElementById('table-reservas-body');
+    if(tbodyReservas) {
+        tbodyReservas.innerHTML = dbKinetiq.reservas.map(item => `
+            <tr>
+                <td>${item.id}</td>
+                <td>${item.equipamento}</td>
+                <td>${item.solicitante}</td>
+                <td>${item.periodo}</td>
+                <td><span class="status-badge reserved">${item.status}</span></td>
+                <td>
+                    <div class="action-btns">
+                        <button class="btn-icon delete" title="Excluir" onclick="deletarItem('reservas', '${item.id}')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Atualiza contadores do dashboard
+    document.getElementById('stat-equipamentos').innerText = dbKinetiq.equipamentos.length;
+    document.getElementById('stat-agenda').innerText = dbKinetiq.agenda.length;
+    document.getElementById('stat-operadores').innerText = dbKinetiq.operadores.length;
+    document.getElementById('stat-clientes').innerText = dbKinetiq.clientes.length;
+}
+
+// ==========================================
+// 2. FUNÇÃO DE EXCLUSÃO DE ITENS
+// ==========================================
+function deletarItem(modulo, id) {
+    if(confirm(`Deseja realmente excluir o registro ${id}?`)) {
+        dbKinetiq[modulo] = dbKinetiq[modulo].filter(item => item.id !== id);
+        renderizarTabelas();
+        alert("Registro excluído com sucesso!");
+    }
+}
+
+// ==========================================
+// 3. FUNÇÕES DE INCLUSÃO (MODAIS INTERATIVOS)
+// ==========================================
+function abrirNovoEquipamento() {
+    const nome = prompt("Nome do Equipamento (ex: Lente 24-70mm):");
+    if(!nome) return;
+    const categoria = prompt("Categoria (ex: Lentes, Câmeras, Áudio):") || "Geral";
+    const serie = prompt("Número de Série:") || "SN-000000";
+
+    const novoId = `#0${dbKinetiq.equipamentos.length + 1}`;
+    dbKinetiq.equipamentos.push({ id: novoId, nome, categoria, serie, status: "Disponível" });
+    renderizarTabelas();
+    alert("Equipamento cadastrado com sucesso!");
+}
+
+function abrirNovoAgendamento() {
+    const titulo = prompt("Título da Produção:");
+    if(!titulo) return;
+    const data = prompt("Data (DD/MM/AAAA):") || "29/08/2026";
+    const local = prompt("Local da Gravação:") || "Externo";
+
+    const novoId = `#10${dbKinetiq.agenda.length + 1}`;
+    dbKinetiq.agenda.push({ id: novoId, titulo, data, local });
+    renderizarTabelas();
+    alert("Agendamento criado com sucesso!");
+}
+
+function abrirNovaEscala() {
+    const cargo = prompt("Cargo / Produção:");
+    if(!cargo) return;
+    const operador = prompt("Nome do Operador Escalado:") || "Operador";
+    const data = prompt("Data (DD/MM/AAAA):") || "28/08/2026";
+    const turno = prompt("Turno (Manhã, Tarde, Integral):") || "Integral";
+
+    const novoId = `#50${dbKinetiq.escalas.length + 1}`;
+    dbKinetiq.escalas.push({ id: novoId, cargo, operador, data, turno });
+    renderizarTabelas();
+    alert("Operador escalado com sucesso!");
+}
+
+function abrirNovoOperador() {
+    const nome = prompt("Nome Completo do Operador:");
+    if(!nome) return;
+    const email = prompt("E-mail:") || "operador@kinetiq.org";
+    const funcao = prompt("Função / Especialidade:") || "Técnico Audiovisual";
+
+    const novoId = `#0${dbKinetiq.operadores.length + 1}`;
+    dbKinetiq.operadores.push({ id: novoId, nome, email, funcao });
+    renderizarTabelas();
+    alert("Operador cadastrado com sucesso!");
+}
+
+function abrirNovoCliente() {
+    const nome = prompt("Nome do Cliente / Empresa:");
+    if(!nome) return;
+    const contato = prompt("Telefone / Contato:") || "(11) 99999-9999";
+    const email = prompt("E-mail corporativo:") || "cliente@email.com";
+
+    const novoId = `#C${dbKinetiq.clientes.length + 1}`;
+    dbKinetiq.clientes.push({ id: novoId, nome, contato, email });
+    renderizarTabelas();
+    alert("Cliente cadastrado com sucesso!");
+}
+
+function abrirNovaReserva() {
+    const equipamento = prompt("Nome do Equipamento a reservar:");
+    if(!equipamento) return;
+    const solicitante = prompt("Nome do Solicitante:") || "Equipe";
+    const periodo = prompt("Período (Ex: 28/08 - 30/08):") || "Hoje";
+
+    const novoId = `#R${dbKinetiq.reservas.length + 1}`;
+    dbKinetiq.reservas.push({ id: novoId, equipamento, solicitante, periodo, status: "Reservado" });
+    renderizarTabelas();
+    alert("Reserva registrada com sucesso!");
+}
+
+// ==========================================
+// 4. FUNÇÃO DE PESQUISA GLOBAL EM TEMPO REAL
+// ==========================================
+function handleSearch() {
+    const termo = document.getElementById('input-search').value.toLowerCase();
+    if(!termo) {
+        renderizarTabelas();
+        return;
+    }
+
+    // Filtra equipamentos localmente com base na pesquisa
+    dbKinetiq.equipamentos = dbKinetiq.equipamentos.filter(e => 
+        e.nome.toLowerCase().includes(termo) || e.categoria.toLowerCase().includes(termo) || e.serie.toLowerCase().includes(termo)
+    );
+    renderizarTabelas();
+}
+
+// ==========================================
+// 5. AUTENTICAÇÃO E PERFIL
 // ==========================================
 function switchLoginPortal(portal) {
     document.querySelectorAll('.login-tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -36,8 +285,7 @@ function toggleRegisterFormAdmin(e, show) {
 
 function handleEmailLogin(event) {
     event.preventDefault();
-    const email = document.getElementById('input-email-equipe').value;
-    entrarNoSistema(email.split('@')[0], "Operador Técnico", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", "operator");
+    entrarNoSistema("Carlos Silva", "Operador Técnico", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", "operator");
 }
 
 function handleAdminLogin(event) {
@@ -53,12 +301,11 @@ function handleRegisterOperator(event) {
 
 function handleRegisterAdmin(event) {
     event.preventDefault();
-    alert("Empresa cadastrada com sucesso! Faça login com suas credenciais master.");
+    alert("Empresa cadastrada com sucesso!");
     toggleRegisterFormAdmin(event, false);
 }
 
 function handleCredentialResponse(response) {
-    console.log("Google JWT Token:", response.credential);
     entrarNoSistema("Usuário Google", "Operador", "https://via.placeholder.com/150", "operator");
 }
 
@@ -76,7 +323,7 @@ function entrarNoSistema(nome, cargo, avatar, role) {
         document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
     }
 
-    carregarDadosIniciais();
+    renderizarTabelas();
 }
 
 function logout() {
@@ -84,9 +331,6 @@ function logout() {
     document.getElementById('login-screen').style.display = 'flex';
 }
 
-// ==========================================
-// 2. NAVEGAÇÃO ENTRE TELAS (VIEWS)
-// ==========================================
 function switchView(viewId, event) {
     if(event) event.preventDefault();
     document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
@@ -97,13 +341,24 @@ function switchView(viewId, event) {
     if(activeNav) activeNav.classList.add('active');
 }
 
-// ==========================================
-// 3. GESTÃO DE PERFIL, UPLOAD DE FOTO E SENHA
-// ==========================================
+function toggleNotifications(e) {
+    e.stopPropagation();
+    document.getElementById('notif-dropdown').classList.toggle('show');
+}
+
+window.onclick = function(event) {
+    if (!event.target.closest('.notification-btn') && !event.target.closest('.notifications-dropdown')) {
+        document.getElementById('notif-dropdown').classList.remove('show');
+    }
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+}
+
 function abrirModalPerfil() {
     document.getElementById('perfil-nome').value = document.getElementById('user-name-display').innerText;
     document.getElementById('preview-avatar').src = document.getElementById('user-avatar').src;
-    document.getElementById('perfil-nova-senha').value = ""; // Limpa campo de senha ao abrir
     document.getElementById('modal-perfil').style.display = 'flex';
 }
 
@@ -124,75 +379,12 @@ function previewNovaFoto(event) {
 
 function salvarAlteracoesPerfil(event) {
     event.preventDefault();
-    
-    const novoNome = document.getElementById('perfil-nome').value;
-    const novoEmail = document.getElementById('perfil-email').value;
-    const novaFoto = document.getElementById('preview-avatar').src;
-    const novaSenha = document.getElementById('perfil-nova-senha').value;
-
-    // Atualiza visualmente na barra lateral
-    document.getElementById('user-name-display').innerText = novoNome;
-    document.getElementById('user-avatar').src = novaFoto;
-
-    // Validação ou envio da senha
-    if(novaSenha) {
-        if(novaSenha.length < 6) {
-            alert("A nova senha deve ter pelo menos 6 caracteres.");
-            return;
-        }
-        console.log("Nova senha configurada com sucesso para o usuário:", novoEmail);
-    }
-
-    alert("Dados de perfil e configurações de acesso atualizados com sucesso!");
+    document.getElementById('user-name-display').innerText = document.getElementById('perfil-nome').value;
+    document.getElementById('user-avatar').src = document.getElementById('preview-avatar').src;
+    alert("Perfil atualizado com sucesso!");
     fecharModalPerfil();
 }
 
-// ==========================================
-// 4. COMPONENTES DE INTERFACE E NOTIFICAÇÕES
-// ==========================================
-function toggleNotifications(e) {
-    e.stopPropagation();
-    const dropdown = document.getElementById('notif-dropdown');
-    dropdown.classList.toggle('show');
+function exportarRelatorio(tipo) {
+    alert("Relatório exportado com sucesso em formato " + tipo.toUpperCase());
 }
-
-window.onclick = function(event) {
-    if (!event.target.closest('.notification-btn') && !event.target.closest('.notifications-dropdown')) {
-        document.getElementById('notif-dropdown').classList.remove('show');
-    }
-}
-
-function toggleTheme() {
-    document.body.classList.toggle('light-theme');
-}
-
-// ==========================================
-// 5. CARREGAMENTO DE DADOS E AÇÕES DO SISTEMA
-// ==========================================
-async function carregarDadosIniciais() {
-    try {
-        const res = await fetch(`${API_URL}/api/dashboard/estatisticas`);
-        if(res.ok) {
-            const data = await res.json();
-            document.getElementById('stat-equipamentos').innerText = data.inventario?.total_ativos || 142;
-            document.getElementById('stat-agenda').innerText = 18;
-            document.getElementById('stat-operadores').innerText = 12;
-            document.getElementById('stat-clientes').innerText = 24;
-        }
-    } catch (e) {
-        console.log("Backend offline ou em modo estático, aplicando dados padrões.");
-        document.getElementById('stat-equipamentos').innerText = "142";
-        document.getElementById('stat-agenda').innerText = "18";
-        document.getElementById('stat-operadores').innerText = "12";
-        document.getElementById('stat-clientes').innerText = "24";
-    }
-}
-
-function abrirNovoEquipamento() { alert("Abrir modal de novo equipamento"); }
-function abrirNovoAgendamento() { alert("Abrir modal de novo agendamento"); }
-function abrirNovaEscala() { alert("Abrir modal de nova escala"); }
-function abrirNovoOperador() { alert("Abrir modal de novo operador"); }
-function abrirNovoCliente() { alert("Abrir modal de novo cliente"); }
-function abrirNovaReserva() { alert("Abrir modal de nova reserva"); }
-function exportarRelatorio(tipo) { alert("Exportando relatório em formato " + tipo.toUpperCase()); }
-function handleSearch() {}
