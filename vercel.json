@@ -1,4 +1,13 @@
 {
   "version": 2,
-  "public": true
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/mainknq.py"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
 }
