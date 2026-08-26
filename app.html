@@ -3,781 +3,962 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Resource Planning - Sistema Completo de Gestão</title>
-    
+    <title>Kinetiq Enterprise - Sistema de Gestão Audiovisual Completo</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .modal-transition { transition: opacity 0.3s ease, transform 0.3s ease; }
+        :root {
+            --bg-main: #070a12;
+            --bg-sidebar: #0b1120;
+            --bg-card: #111827;
+            --bg-card-hover: #1f2937;
+            --border-color: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #f97316;
+            --primary-hover: #ea580c;
+            --accent-blue: #3b82f6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --sidebar-width: 270px;
+        }
+
+        body.light-theme {
+            --bg-main: #f1f5f9;
+            --bg-sidebar: #0f172a;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+        /* TELA DE AUTENTICAÇÃO */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #111827 0%, #070a12 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+        }
+
+        .login-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: var(--bg-main);
+            padding: 5px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .login-tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .login-tab-btn.active {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-logo img { width: 260px; height: auto; object-fit: contain; }
+        .login-logo h1 { font-size: 1rem; color: var(--text-muted); margin-top: 10px; font-weight: 400; }
+
+        .form-control {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-control label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .form-control input, .form-control select {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .form-control input:focus { border-color: var(--primary); }
+
+        .btn-primary-custom {
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-primary-custom:hover { background-color: var(--primary-hover); }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); }
+        .auth-divider::before { margin-right: .75em; }
+        .auth-divider::after { margin-left: .75em; }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: #fca5a5;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+
+        /* ESTRUTURA PRINCIPAL */
+        #app-container { display: none; width: 100vw; height: 100vh; }
+
+        aside {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 16px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .sidebar-top .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+        .sidebar-top .brand img { width: 190px; object-fit: contain; }
+        .sidebar-top .brand span { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 6px; }
+
+        .nav-menu { display: flex; flex-direction: column; gap: 6px; list-style: none; overflow-y: auto; max-height: calc(100vh - 220px); }
+        .nav-item a { display: flex; align-items: center; gap: 14px; padding: 12px 16px; color: var(--text-muted); text-decoration: none; border-radius: 12px; font-size: 0.9rem; font-weight: 500; }
+        .nav-item a:hover, .nav-item.active a { background-color: var(--bg-card-hover); color: var(--text-main); }
+        .nav-item.active a { color: var(--primary); background: rgba(249, 115, 22, 0.12); }
+        .nav-item a i { font-size: 1.1rem; width: 22px; text-align: center; }
+
+        .sidebar-user { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border-color); }
+        .user-info { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+        .user-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .user-details h4 { font-size: 0.85rem; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-details span { font-size: 0.7rem; color: var(--text-muted); }
+        .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; }
+        .btn-logout:hover { color: var(--danger); }
+
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background-color: var(--bg-main); position: relative; }
+        header.topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 36px; border-bottom: 1px solid var(--border-color); background-color: var(--bg-main); position: sticky; top: 0; z-index: 100; }
+        .welcome-box h2 { font-size: 1.4rem; font-weight: 600; }
+        .welcome-box p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .topbar-actions { display: flex; align-items: center; gap: 16px; position: relative; }
+        .search-box { position: relative; }
+        .search-box input { background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 16px 10px 42px; border-radius: 12px; font-size: 0.85rem; width: 280px; outline: none; }
+        .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .notification-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+        .notification-badge { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background-color: var(--primary); border-radius: 50%; }
+
+        .notifications-dropdown { position: absolute; top: 55px; right: 0; width: 340px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: none; flex-direction: column; z-index: 1000; overflow: hidden; }
+        .notifications-dropdown.show { display: flex; }
+        .notifications-header { padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-weight: 600; font-size: 0.9rem; }
+        .notification-item { padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); }
+
+        .btn-new-agenda { background-color: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .content-body { padding: 36px; display: flex; flex-direction: column; gap: 28px; flex: 1; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+
+        .stat-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+        .stat-card h3 { font-size: 0.85rem; color: var(--text-muted); }
+        .stat-card .stat-value { font-size: 2rem; font-weight: 700; margin-top: 10px; }
+        .stat-card img { position: absolute; right: 14px; bottom: 14px; max-height: 55px; opacity: 0.7; border-radius: 8px; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        @media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .panel { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 26px; }
+        .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .panel-header h2 { font-size: 1.05rem; font-weight: 600; }
+        .panel-header a { font-size: 0.85rem; color: var(--primary); text-decoration: none; }
+
+        .equipment-list, .schedule-list, .scale-list { display: flex; flex-direction: column; gap: 12px; }
+        .item-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: 14px; }
+        .item-details { display: flex; align-items: center; gap: 14px; }
+        .item-info h4 { font-size: 0.95rem; }
+        .item-info span { font-size: 0.75rem; color: var(--text-muted); }
+
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+        .status-badge.available { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .status-badge.reserved { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+
+        footer.app-footer { display: flex; align-items: center; justify-content: space-between; padding: 20px 36px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); }
+        .footer-partner { display: flex; align-items: center; gap: 8px; }
+
+        .app-view { display: none; }
+        .app-view.active-view { display: block; }
+        .table-container { width: 100%; overflow-x: auto; }
+        table.data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        table.data-table th, table.data-table td { padding: 16px 18px; border-bottom: 1px solid var(--border-color); }
+        table.data-table th { color: var(--text-muted); background-color: rgba(255, 255, 255, 0.02); }
+
+        .action-btns { display: flex; gap: 8px; }
+        .btn-icon { background: none; border: 1px solid var(--border-color); color: var(--text-muted); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-icon.delete:hover { border-color: var(--danger); color: var(--danger); }
+
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: 0.4s; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased h-screen flex overflow-hidden">
+<body>
 
-    <aside id="sidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col transition-all duration-300 z-30 shadow-xl">
-        <div class="h-16 flex items-center justify-between px-6 bg-slate-950 border-b border-slate-800">
-            <div class="flex items-center space-x-3">
-                <div class="bg-indigo-600 p-2 rounded-lg text-white">
-                    <i class="fa-solid fa-cube text-lg"></i>
-                </div>
-                <span class="font-bold text-lg text-white tracking-wide">Nexus ERP</span>
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-logo">
+                <a href="#">
+                    <img src="kinetiq.png" alt="Kinetiq Logo">
+                </a>
+                <h1 id="auth-subtitle">Gestão Audiovisual Profissional</h1>
             </div>
-            <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white md:hidden">
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
+
+            <div class="login-tabs" id="auth-tabs">
+                <button class="login-tab-btn active" onclick="switchLoginPortal('equipe')">Acesso Equipe</button>
+                <button class="login-tab-btn" onclick="switchLoginPortal('admin')">Acesso Admin</button>
+            </div>
+
+            <div id="login-error" class="error-message"></div>
+
+            <div id="portal-equipe">
+                <form id="form-login-equipe" onsubmit="handleEmailLogin(event)">
+                    <div class="form-control">
+                        <label>E-mail operacional</label>
+                        <input type="email" id="input-email-equipe" placeholder="exemplo@kinetiq.org" required>
+                    </div>
+                    <div class="form-control">
+                        <label>Senha de acesso</label>
+                        <input type="password" id="input-senha-equipe" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary-custom">Entrar no Sistema</button>
+                </form>
+
+                <div style="text-align: center; margin-top: 18px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">
+                        Não tem conta? <a href="#" onclick="toggleRegisterFormOperator(event, true)" style="color: var(--primary); text-decoration: none; font-weight: 600;">Cadastre-se</a>
+                    </p>
+                </div>
+
+                <div class="auth-divider">OU ACESSE COM</div>
+
+                <div id="google-signin-container" style="display: flex; justify-content: center;">
+                    <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
+                    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <form id="form-register-operator" style="display: none;" onsubmit="handleRegisterOperator(event)">
+                <div class="form-control">
+                    <label>Seu Nome Completo</label>
+                    <input type="text" id="reg-op-nome" placeholder="Nome Completo" required>
+                </div>
+                <div class="form-control">
+                    <label>E-mail Operacional</label>
+                    <input type="email" id="reg-op-email" placeholder="seu@email.com" required>
+                </div>
+                <div class="form-control">
+                    <label>Criar Senha</label>
+                    <input type="password" id="reg-op-senha" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary-custom">Finalizar Cadastro</button>
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="#" onclick="toggleRegisterFormOperator(event, false)" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600;">Voltar ao login</a>
+                </div>
+            </form>
+
+            <div id="portal-admin" style="display: none;">
+                <form id="form-login-admin" onsubmit="handleAdminLogin(event)">
+                    <div class="form-control">
+                        <label>E-mail do Administrador</label>
+                        <input type="email" id="input-email-admin" placeholder="admin@kinetiq.org" required>
+                    </div>
+                    <div class="form-control">
+                        <label>Senha Master</label>
+                        <input type="password" id="input-senha-admin" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary-custom">Autenticação Segura</button>
+                </form>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">
+                        Sua empresa não tem conta? <a href="#" onclick="toggleRegisterFormAdmin(event, true)" style="color: var(--primary); text-decoration: none; font-weight: 600;">Cadastrar Empresa</a>
+                    </p>
+                </div>
+            </div>
+
+            <form id="form-register-admin" style="display: none;" onsubmit="handleRegisterAdmin(event)">
+                <div class="form-control">
+                    <label>Seu Nome Completo (Admin)</label>
+                    <input type="text" id="reg-adm-nome" placeholder="Seu Nome" required>
+                </div>
+                <div class="form-control">
+                    <label>Nome da Empresa / Equipe</label>
+                    <input type="text" id="reg-adm-empresa-equipe" placeholder="Ex: Kinetiq Filmes" required>
+                </div>
+                <div class="form-control">
+                    <label>Telefone de Contato</label>
+                    <input type="tel" id="reg-adm-telefone" placeholder="(11) 99999-9999" required>
+                </div>
+                <div class="form-control">
+                    <label>E-mail Master</label>
+                    <input type="email" id="reg-adm-email" placeholder="admin@empresa.com" required>
+                </div>
+                <div class="form-control">
+                    <label>Criar Senha Master</label>
+                    <input type="password" id="reg-adm-senha" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary-custom">Cadastrar Empresa</button>
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="#" onclick="toggleRegisterFormAdmin(event, false)" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600;">Voltar ao login</a>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
-            <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu Principal</p>
-            <a href="#" onclick="switchTab('dashboard')" id="nav-dashboard" class="flex items-center px-3 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition-colors group">
-                <i class="fa-solid fa-chart-pie w-6 text-center mr-2"></i> Dashboard
-            </a>
-            <a href="#" onclick="switchTab('equipamentos')" id="nav-equipamentos" class="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                <i class="fa-solid fa-server w-6 text-center mr-2"></i> Equipamentos
-            </a>
-            <a href="#" onclick="switchTab('usuarios')" id="nav-usuarios" class="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                <i class="fa-solid fa-users w-6 text-center mr-2"></i> Usuários & Acessos
-            </a>
-            <a href="#" onclick="switchTab('estoque')" id="nav-estoque" class="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                <i class="fa-solid fa-boxes-stacked w-6 text-center mr-2"></i> Estoque & Peças
-            </a>
-            
-            <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-6 mb-2">Sistema</p>
-            <a href="#" onclick="switchTab('relatorios')" id="nav-relatorios" class="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                <i class="fa-solid fa-file-contract w-6 text-center mr-2"></i> Relatórios
-            </a>
-            <a href="#" onclick="switchTab('configuracoes')" id="nav-configuracoes" class="flex items-center px-3 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                <i class="fa-solid fa-gear w-6 text-center mr-2"></i> Configurações
-            </a>
-        </nav>
+    <div id="app-container">
+        <aside>
+            <div class="sidebar-top">
+                <div class="brand">
+                    <a href="#" style="text-decoration: none;">
+                        <img src="kinetiq.png" alt="Kinetiq">
+                    </a>
+                    <span>Enterprise System</span>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item active" data-target="view-dashboard">
+                        <a href="#" onclick="switchView('view-dashboard', event)"><i class="fa-solid fa-house"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item" data-target="view-equipamentos">
+                        <a href="#" onclick="switchView('view-equipamentos', event)"><i class="fa-solid fa-camera"></i> Equipamentos</a>
+                    </li>
+                    <li class="nav-item" data-target="view-agenda">
+                        <a href="#" onclick="switchView('view-agenda', event)"><i class="fa-solid fa-calendar-days"></i> Agenda</a>
+                    </li>
+                    <li class="nav-item" data-target="view-escalas">
+                        <a href="#" onclick="switchView('view-escalas', event)"><i class="fa-solid fa-users-gear"></i> Escalas</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-operadores">
+                        <a href="#" onclick="switchView('view-operadores', event)"><i class="fa-solid fa-headset"></i> Operadores</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-clientes">
+                        <a href="#" onclick="switchView('view-clientes', event)"><i class="fa-solid fa-address-book"></i> Clientes</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-reservas">
+                        <a href="#" onclick="switchView('view-reservas', event)"><i class="fa-solid fa-clipboard-check"></i> Reservas</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-relatorios">
+                        <a href="#" onclick="switchView('view-relatorios', event)"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
+                    </li>
+                    <li class="nav-item" data-target="view-configuracoes">
+                        <a href="#" onclick="switchView('view-configuracoes', event)"><i class="fa-solid fa-gear"></i> Configurações</a>
+                    </li>
+                </ul>
+            </div>
 
-        <div class="p-4 bg-slate-950 border-t border-slate-800">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <img id="userAvatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces" alt="Avatar" class="w-9 h-9 rounded-full object-cover border border-slate-700">
-                    <div class="overflow-hidden">
-                        <p id="userName" class="text-sm font-medium text-white truncate">Carlos Silva</p>
-                        <p id="userRole" class="text-xs text-slate-400 truncate">Administrador</p>
+            <div class="sidebar-user">
+                <div class="user-info">
+                    <img id="user-avatar" src="https://via.placeholder.com/150" alt="Avatar">
+                    <div class="user-details">
+                        <h4 id="user-name-display">Usuário</h4>
+                        <span id="user-role-display">Operador</span>
                     </div>
                 </div>
-                <button onclick="executarLogout()" class="text-slate-400 hover:text-red-400 transition-colors" title="Sair do Sistema">
-                    <i class="fa-solid fa-right-from-bracket text-lg"></i>
-                </button>
+                <button class="btn-logout" onclick="logout()" title="Sair"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
             </div>
-        </div>
-    </aside>
+        </aside>
 
-    <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm z-20">
-            <div class="flex items-center space-x-4">
-                <button onclick="toggleSidebar()" class="text-slate-500 hover:text-slate-700 md:hidden">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
-                
-                <div class="relative w-64 sm:w-80">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                    </span>
-                    <input type="text" id="searchInput" onkeyup="handleSearch(event)" placeholder="Pesquisar globalmente..." class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+        <main>
+            <header class="topbar">
+                <div class="welcome-box">
+                    <h2 id="topbar-title">Bem-vindo(a) de volta! 👋</h2>
+                    <p>Controle unificado da sua produção audiovisual.</p>
                 </div>
-            </div>
-
-            <div class="flex items-center space-x-3">
-                <button onclick="abrirNovoEquipamento()" class="hidden sm:inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition-all">
-                    <i class="fa-solid fa-plus mr-2"></i> Novo Equipamento
-                </button>
-
-                <div class="relative">
-                    <button onclick="toggleNotifications()" class="relative p-2 text-slate-600 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors">
-                        <i class="fa-solid fa-bell text-lg"></i>
-                        <span id="notificationBadge" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                    </button>
+                <div class="topbar-actions">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="input-search" placeholder="Pesquisar nos registros..." onkeyup="handleSearch()">
+                    </div>
                     
-                    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl py-2 z-50">
-                        <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center">
-                            <span class="font-semibold text-sm text-slate-800">Notificações</span>
-                            <button onclick="marcarTodasLidas()" class="text-xs text-indigo-600 hover:underline">Marcar lidas</button>
-                        </div>
-                        <div id="notificationList" class="max-h-64 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                    <button class="notification-btn" onclick="toggleNotifications(event)">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </button>
+
+                    <div class="notifications-dropdown" id="notif-dropdown">
+                        <div class="notifications-header">Notificações Recentes</div>
+                        <div class="notification-item"><strong>Sincronização OK</strong> Todos os módulos conectados.</div>
+                    </div>
+                </div>
+            </header>
+
+            <div id="view-dashboard" class="app-view active-view">
+                <div class="content-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div>
+                                <h3>Equipamentos</h3>
+                                <div class="stat-value" id="stat-equipamentos">0</div>
+                                <span class="stat-desc">Frota total cadastrada</span>
                             </div>
+                            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=100" alt="Gear">
+                        </div>
+                        <div class="stat-card">
+                            <div>
+                                <h3>Agendamentos</h3>
+                                <div class="stat-value" id="stat-agenda">0</div>
+                                <span class="stat-desc">Produções ativas</span>
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=100" alt="Agenda">
+                        </div>
+                        <div class="stat-card admin-only">
+                            <div>
+                                <h3>Operadores</h3>
+                                <div class="stat-value" id="stat-operadores">0</div>
+                                <span class="stat-desc">Equipe técnica</span>
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Operators">
+                        </div>
+                        <div class="stat-card admin-only">
+                            <div>
+                                <h3>Clientes</h3>
+                                <div class="stat-value" id="stat-clientes">0</div>
+                                <span class="stat-desc">Parceiros ativos</span>
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=100" alt="Clients">
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h2>Status da Frota</h2>
+                                <a href="#" onclick="switchView('view-equipamentos', event)">Ver todos &gt;</a>
+                            </div>
+                            <div class="equipment-list" id="dashboard-equipment-list">
+                                <div class="item-row">
+                                    <div class="item-details">
+                                        <div class="item-info">
+                                            <h4>Câmera Principal (Sony FX3)</h4>
+                                            <span>Case 01 - Prateleira A</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge available">Disponível</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h2 id="escala-dashboard-title">Minha Escala</h2>
+                                <a href="#" onclick="switchView('view-escalas', event)">Ver todas</a>
+                            </div>
+                            <div class="scale-list" id="dashboard-scales-list">
+                                <div class="item-row">
+                                    <div class="item-details">
+                                        <div class="item-info">
+                                            <h4>Gravação Externa</h4>
+                                            <span>Hoje - Turno Manhã</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge reserved">Confirmado</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </header>
 
-        <main class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-slate-50">
-            
-            <div id="notificationArea" class="mb-4"></div>
-
-            <section id="tab-dashboard" class="space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-900">Visão Geral do Sistema</h1>
-                        <p class="text-sm text-slate-500">Acompanhe os principais indicadores de desempenho em tempo real.</p>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <button onclick="exportarRelatorioPDF()" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm transition-all">
-                            <i class="fa-solid fa-download mr-2 text-slate-500"></i> Exportar PDF
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Equipamentos</p>
-                                <h3 id="statTotalEquipamentos" class="text-2xl font-bold text-slate-900 mt-1">1,248</h3>
-                            </div>
-                            <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-                                <i class="fa-solid fa-server text-xl"></i>
-                            </div>
+            <div id="view-equipamentos" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Controle de Equipamentos</h2>
+                            <button class="btn-new-agenda admin-only" onclick="abrirNovoEquipamento()"><i class="fa-solid fa-plus"></i> Novo Item</button>
                         </div>
-                        <div class="mt-4 flex items-center text-xs text-emerald-600 font-medium">
-                            <i class="fa-solid fa-arrow-trend-up mr-1"></i> +4.2% este mês
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ativos em Operação</p>
-                                <h3 id="statAtivosOperacao" class="text-2xl font-bold text-slate-900 mt-1">1,180</h3>
-                            </div>
-                            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-                                <i class="fa-solid fa-circle-check text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex items-center text-xs text-emerald-600 font-medium">
-                            <i class="fa-solid fa-shield-halved mr-1"></i> Estável
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Manutenção Pendente</p>
-                                <h3 id="statManutencao" class="text-2xl font-bold text-slate-900 mt-1">42</h3>
-                            </div>
-                            <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
-                                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex items-center text-xs text-amber-600 font-medium">
-                            <i class="fa-solid fa-clock mr-1"></i> Requer atenção
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Custo Operacional</p>
-                                <h3 class="text-2xl font-bold text-slate-900 mt-1">R$ 45.2k</h3>
-                            </div>
-                            <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
-                                <i class="fa-solid fa-wallet text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex items-center text-xs text-rose-600 font-medium">
-                            <i class="fa-solid fa-arrow-trend-down mr-1"></i> -1.5% vs anterior
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-slate-900">Histórico de Atividade Anual</h3>
-                            <span class="text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">2026</span>
-                        </div>
-                        <div class="h-72">
-                            <canvas id="mainChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <h3 class="font-bold text-slate-900 mb-4">Status dos Equipamentos</h3>
-                        <div class="h-72 flex items-center justify-center">
-                            <canvas id="pieChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="tab-equipamentos" class="space-y-6 hidden">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-900">Gerenciamento de Equipamentos</h1>
-                        <p class="text-sm text-slate-500">Controle completo de servidores, máquinas e ativos de rede.</p>
-                    </div>
-                    <button onclick="abrirNovoEquipamento()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition-all">
-                        <i class="fa-solid fa-plus mr-2"></i> Adicionar Equipamento
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                    <th class="py-4 px-6">Identificação</th>
-                                    <th class="py-4 px-6">Categoria</th>
-                                    <th class="py-4 px-6">Localização</th>
-                                    <th class="py-4 px-6">Status</th>
-                                    <th class="py-4 px-6 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelaEquipamentosBody" class="divide-y divide-slate-100 text-sm">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>Categoria</th>
+                                        <th>Nº Série</th>
+                                        <th>Status</th>
+                                        <th class="admin-only">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-equipamentos-body">
+                                    <tr>
+                                        <td>#01</td>
+                                        <td>Sony FX3 Cinema Line</td>
+                                        <td>Câmeras</td>
+                                        <td>SN-983421</td>
+                                        <td><span class="status-badge available">Disponível</span></td>
+                                        <td class="admin-only">
+                                            <div class="action-btns">
+                                                <button class="btn-icon delete" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 </tbody>
-                        </table>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <section id="tab-usuarios" class="space-y-6 hidden">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-900">Controle de Usuários</h1>
-                        <p class="text-sm text-slate-500">Gerencie permissões, contas integradas e acessos corporativos.</p>
-                    </div>
-                    <button onclick="abrirNovoUsuario()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition-all">
-                        <i class="fa-solid fa-user-plus mr-2"></i> Novo Usuário
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                <th class="py-4 px-6">Nome / E-mail</th>
-                                <th class="py-4 px-6">Função</th>
-                                <th class="py-4 px-6">Status da Conta</th>
-                                <th class="py-4 px-6 text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaUsuariosBody" class="divide-y divide-slate-100 text-sm">
-                            </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section id="tab-estoque" class="space-y-6 hidden">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-900">Estoque & Peças de Reposição</h1>
-                        <p class="text-sm text-slate-500">Acompanhe níveis de suprimentos de hardware e insumos.</p>
-                    </div>
-                    <button onclick="abrirNovoItemEstoque()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm">
-                        <i class="fa-solid fa-box-archive mr-2"></i> Adicionar Peça
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="gridEstoque">
-                    </div>
-            </section>
-
-            <section id="tab-relatorios" class="space-y-6 hidden">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900">Central de Relatórios Analíticos</h1>
-                    <p class="text-sm text-slate-500">Gere relatórios customizados detalhados de infraestrutura.</p>
-                </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <p class="text-sm text-slate-600">Selecione o modelo de relatório desejado para exportação instantânea:</p>
-                    <div class="flex gap-4">
-                        <button onclick="exportarRelatorioPDF()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Baixar Relatório Geral (PDF)</button>
-                        <button onclick="mostrarNotificacao('Relatório gerado em CSV com sucesso!', 'success')" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900">Exportar Planilha CSV</button>
+            <div id="view-agenda" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Agenda Geral de Produções</h2>
+                            <button class="btn-new-agenda admin-only" onclick="abrirNovoAgendamento()"><i class="fa-solid fa-plus"></i> Novo Evento</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Título</th>
+                                        <th>Data</th>
+                                        <th>Local</th>
+                                        <th class="admin-only">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-agenda-body">
+                                    <tr>
+                                        <td>#101</td>
+                                        <td>Gravação Corporativa</td>
+                                        <td>28/08/2026</td>
+                                        <td>Estúdio Principal</td>
+                                        <td class="admin-only">
+                                            <div class="action-btns">
+                                                <button class="btn-icon delete" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <section id="tab-configuracoes" class="space-y-6 hidden">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900">Configurações do Sistema</h1>
-                    <p class="text-sm text-slate-500">Ajuste parâmetros globais do software e chaves de API.</p>
-                </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 max-w-xl">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Nome da Organização</label>
-                        <input type="text" value="Nexus Corp Technologies" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <div id="view-escalas" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2 id="escala-title">Escalas e Atribuições</h2>
+                            <button class="btn-new-agenda admin-only" onclick="abrirNovaEscala()"><i class="fa-solid fa-plus"></i> Escalar Operador</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Produção / Cargo</th>
+                                        <th>Operador Escalado</th>
+                                        <th>Data</th>
+                                        <th>Turno</th>
+                                        <th class="admin-only">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-escalas-body">
+                                    <tr>
+                                        <td>#501</td>
+                                        <td>Operador de Câmeras</td>
+                                        <td>Carlos Silva</td>
+                                        <td>28/08/2026</td>
+                                        <td>Integral</td>
+                                        <td class="admin-only">
+                                            <div class="action-btns">
+                                                <button class="btn-icon delete" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Google Client ID (GSI)</label>
-                        <input type="text" id="inputClientIdConfig" value="seu-client-id-aqui.apps.googleusercontent.com" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <button onclick="salvarConfiguracoes()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Salvar Alterações</button>
                 </div>
-            </section>
+            </div>
 
+            <div id="view-operadores" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Gestão de Operadores</h2>
+                            <button class="btn-new-agenda" onclick="abrirNovoOperador()"><i class="fa-solid fa-plus"></i> Novo Operador</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome Completo</th>
+                                        <th>E-mail</th>
+                                        <th>Função</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-operadores-body">
+                                    <tr>
+                                        <td>#01</td>
+                                        <td>Carlos Silva</td>
+                                        <td>carlos@kinetiq.org</td>
+                                        <td>Cameraman / Diretor de Fotografia</td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="btn-icon delete" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-clientes" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Gestão de Clientes</h2>
+                            <button class="btn-new-agenda" onclick="abrirNovoCliente()"><i class="fa-solid fa-plus"></i> Novo Cliente</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome / Empresa</th>
+                                        <th>Contato</th>
+                                        <th>E-mail</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-clientes-body">
+                                    <tr>
+                                        <td>#C1</td>
+                                        <td>Get Church Filmes</td>
+                                        <td>(11) 98765-4321</td>
+                                        <td>contato@getchurch.com</td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="btn-icon delete" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-reservas" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Controle de Reservas de Equipamentos</h2>
+                            <button class="btn-new-agenda" onclick="abrirNovaReserva()"><i class="fa-solid fa-plus"></i> Nova Reserva</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Equipamento</th>
+                                        <th>Solicitante</th>
+                                        <th>Período</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-reservas-body">
+                                    <tr>
+                                        <td>#R1</td>
+                                        <td>Sony FX3</td>
+                                        <td>Carlos Silva</td>
+                                        <td>28/08 - 29/08</td>
+                                        <td><span class="status-badge reserved">Reservado</span></td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="btn-icon delete" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-relatorios" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Relatórios Operacionais e Financeiros</h2>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 20px; font-size: 0.9rem; color: var(--text-muted);">
+                            <p>Gere relatórios consolidados do uso de equipamentos, escalas de equipe e histórico de produções do Kinetiq.</p>
+                            <div style="display: flex; gap: 15px;">
+                                <button class="btn-new-agenda" onclick="exportarRelatorio('pdf')"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
+                                <button class="btn-new-agenda" onclick="exportarRelatorio('csv')" style="background-color: var(--accent-blue);"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-configuracoes" class="app-view">
+                <div class="content-body">
+                    <div class="panel" style="max-width: 600px;">
+                        <div class="panel-header">
+                            <h2>Configurações do Sistema</h2>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <h4 style="font-size: 0.95rem; color: var(--text-main);">Modo Claro / Escuro</h4>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted);">Alternar a aparência da interface</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="theme-switch" onchange="toggleTheme()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                                <div>
+                                    <h4 style="font-size: 0.95rem; color: var(--text-main);">Sincronização em Nuvem</h4>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted);">Conectado ao backend FastAPI local</p>
+                                </div>
+                                <span class="status-badge available">Ativo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                <span>&copy; 2026 Kinetiq Enterprise. Todos os direitos reservados.</span>
+                <div class="footer-partner">
+                    <span>Plataforma Audiovisual Integrada</span>
+                </div>
+            </footer>
         </main>
     </div>
 
-    <div id="modalGenerico" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden modal-transition transform scale-95 opacity-0" id="modalContainer">
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                <h3 id="modalTitulo" class="font-bold text-lg text-slate-900">Formulário</h3>
-                <button onclick="fecharModal()" class="text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <div class="p-6" id="modalCorpo">
-                </div>
-        </div>
-    </div>
-
     <script>
-        // ==========================================
-        // 1. ESTADO GLOBAL DA APLICAÇÃO
-        // ==========================================
-        let estadoApp = {
-            usuarioLogado: {
-                nome: "Carlos Silva",
-                email: "carlos.silva@nexuscorp.com",
-                funcao: "Administrador",
-                avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces"
-            },
-            equipamentos: [
-                { id: 1, nome: "Servidor Principal Rack A", categoria: "Servidor", localizacao: "Data Center SP", status: "Operacional" },
-                { id: 2, nome: "Firewall Core Perimeter", categoria: "Rede", localizacao: "Data Center SP", status: "Operacional" },
-                { id: 3, nome: "Storage Backup NAS-01", categoria: "Armazenamento", localizacao: "Filial RJ", status: "Manutenção" },
-                { id: 4, nome: "Switch Core 48 Portas", categoria: "Rede", localizacao: "Data Center SP", status: "Operacional" }
-            ],
-            usuarios: [
-                { id: 1, nome: "Carlos Silva", email: "carlos.silva@nexuscorp.com", funcao: "Administrador", status: "Ativo" },
-                { id: 2, nome: "Ana Souza", email: "ana.souza@nexuscorp.com", funcao: "Suporte Técnico", status: "Ativo" },
-                { id: 3, nome: "Marcos Lima", email: "marcos.lima@nexuscorp.com", funcao: "Auditor", status: "Inativo" }
-            ],
-            estoque: [
-                { id: 1, peca: "Módulo de Memória RAM 32GB", quantidade: 14, min: 5 },
-                { id: 2, peca: "Disco SSD NVMe 2TB", quantidade: 8, min: 4 },
-                { id: 3, peca: "Fonte de Alimentação 750W", quantidade: 3, min: 6 }
-            ],
-            notificacoes: [
-                { id: 1, texto: "Servidor Rack A reiniciado com sucesso.", lida: false, data: "Há 10 min" },
-                { id: 2, texto: "Estoque de Fontes 750W abaixo do limite mínimo.", lida: false, data: "Há 1 hora" },
-                { id: 3, texto: "Novo usuário cadastrado no sistema.", lida: true, data: "Ontem" }
-            ]
-        };
+        const API_URL = "http://127.0.0.1:8000";
 
-        let chartInstanciaMain = null;
-        let chartInstanciaPie = null;
-
-        // ==========================================
-        // 2. INICIALIZAÇÃO E CICLO DE VIDA
-        // ==========================================
-        document.addEventListener("DOMContentLoaded", () => {
-            renderizarTabelaEquipamentos();
-            renderizarTabelaUsuarios();
-            renderizarEstoque();
-            renderizarNotificacoes();
-            inicializarGraficos();
-            inicializarGoogleAuth();
-        });
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
-        }
-
-        function switchTab(tabId) {
-            const tabs = ['dashboard', 'equipamentos', 'usuarios', 'estoque', 'relatorios', 'configuracoes'];
-            tabs.forEach(t => {
-                const el = document.getElementById(`tab-${t}`);
-                const nav = document.getElementById(`nav-${t}`);
-                if (t === tabId) {
-                    el.classList.remove('hidden');
-                    nav.className = "flex items-center px-3 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white transition-colors group";
-                } else {
-                    el.classList.add('hidden');
-                    nav.className = "flex items-center px-3 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group";
-                }
-            });
-            if(tabId === 'dashboard') {
-                setTimeout(() => {
-                    if(chartInstanciaMain) chartInstanciaMain.resize();
-                    if(chartInstanciaPie) chartInstanciaPie.resize();
-                }, 50);
+        function switchLoginPortal(portal) {
+            document.querySelectorAll('.login-tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(portal === 'equipe') {
+                document.querySelectorAll('.login-tab-btn')[0].classList.add('active');
+                document.getElementById('portal-equipe').style.display = 'block';
+                document.getElementById('portal-admin').style.display = 'none';
+                document.getElementById('form-register-operator').style.display = 'none';
+                document.getElementById('form-register-admin').style.display = 'none';
+            } else {
+                document.querySelectorAll('.login-tab-btn')[1].classList.add('active');
+                document.getElementById('portal-admin').style.display = 'block';
+                document.getElementById('portal-equipe').style.display = 'none';
+                document.getElementById('form-register-operator').style.display = 'none';
+                document.getElementById('form-register-admin').style.display = 'none';
             }
         }
 
-        // ==========================================
-        // 3. SISTEMA DE NOTIFICAÇÕES E FEEDBACK
-        // ==========================================
-        function mostrarNotificacao(mensagem, tipo = 'info') {
-            const notifArea = document.getElementById('notificationArea');
-            const bgCor = tipo === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 
-                          tipo === 'error' ? 'bg-rose-50 text-rose-800 border-rose-200' : 'bg-indigo-50 text-indigo-800 border-indigo-200';
+        function toggleRegisterFormOperator(e, show) {
+            e.preventDefault();
+            document.getElementById('portal-equipe').style.display = show ? 'none' : 'block';
+            document.getElementById('form-register-operator').style.display = show ? 'block' : 'none';
+            document.getElementById('auth-tabs').style.display = show ? 'none' : 'flex';
+        }
+
+        function toggleRegisterFormAdmin(e, show) {
+            e.preventDefault();
+            document.getElementById('portal-admin').style.display = show ? 'none' : 'block';
+            document.getElementById('form-register-admin').style.display = show ? 'block' : 'none';
+            document.getElementById('auth-tabs').style.display = show ? 'none' : 'flex';
+        }
+
+        function handleEmailLogin(event) {
+            event.preventDefault();
+            entrarNoSistema("Operador Kinetiq", "Operador Técnico", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", "operator");
+        }
+
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            entrarNoSistema("Administrador Master", "Administrador", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150", "admin");
+        }
+
+        function handleRegisterOperator(event) {
+            event.preventDefault();
+            alert("Cadastro de operador realizado com sucesso!");
+            toggleRegisterFormOperator(event, false);
+        }
+
+        function handleRegisterAdmin(event) {
+            event.preventDefault();
+            alert("Empresa cadastrada com sucesso! Faça login com suas credenciais master.");
+            toggleRegisterFormAdmin(event, false);
+        }
+
+        function handleCredentialResponse(response) {
+            console.log("Google JWT:", response.credential);
+            entrarNoSistema("Usuário Google", "Operador", "https://via.placeholder.com/150", "operator");
+        }
+
+        function entrarNoSistema(nome, cargo, avatar, role) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
             
-            notifArea.innerHTML = `
-                <div class="p-4 rounded-xl border ${bgCor} flex items-center justify-between shadow-sm transition-all">
-                    <span class="text-sm font-medium">${mensagem}</span>
-                    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-            `;
-            setTimeout(() => { notifArea.innerHTML = ''; }, 4000);
-        }
+            document.getElementById('user-name-display').innerText = nome;
+            document.getElementById('user-role-display').innerText = cargo;
+            document.getElementById('user-avatar').src = avatar;
 
-        function toggleNotifications() {
-            const dropdown = document.getElementById('notificationDropdown');
-            dropdown.classList.toggle('hidden');
-        }
-
-        function renderizarNotificacoes() {
-            const lista = document.getElementById('notificationList');
-            lista.innerHTML = estadoApp.notificacoes.map(n => `
-                <div class="p-3 hover:bg-slate-50 transition-colors ${n.lida ? 'opacity-60' : 'bg-indigo-50/30'}">
-                    <p class="text-xs text-slate-800 font-medium">${n.texto}</p>
-                    <span class="text-[10px] text-slate-400">${n.data}</span>
-                </div>
-            `).join('');
-        }
-
-        function marcarTodasLidas() {
-            estadoApp.notificacoes.forEach(n => n.lida = true);
-            renderizarNotificacoes();
-            document.getElementById('notificationBadge').classList.add('hidden');
-            mostrarNotificacao('Notificações marcadas como lidas.', 'success');
-        }
-
-        // ==========================================
-        // 4. PESQUISA GLOBAL E FILTRAGEM
-        // ==========================================
-        function handleSearch(event) {
-            const termo = event.target.value.toLowerCase();
-            // Filtro automático na tabela de equipamentos se estiver na aba visível
-            const linhas = document.querySelectorAll('#tabelaEquipamentosBody tr');
-            linhas.forEach(linha => {
-                const texto = linha.textContent.toLowerCase();
-                linha.style.display = texto.includes(termo) ? '' : 'none';
-            });
-        }
-
-        // ==========================================
-        // 5. MODAIS E FORMULÁRIOS DINÂMICOS
-        // ==========================================
-        function abrirModal(titulo, htmlConteudo) {
-            const modal = document.getElementById('modalGenerico');
-            const container = document.getElementById('modalContainer');
-            document.getElementById('modalTitulo').textContent = titulo;
-            document.getElementById('modalCorpo').innerHTML = htmlConteudo;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                container.classList.remove('scale-95', 'opacity-0');
-                container.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
-
-        function fecharModal() {
-            const modal = document.getElementById('modalGenerico');
-            const container = document.getElementById('modalContainer');
-            container.classList.remove('scale-100', 'opacity-100');
-            container.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        function abrirNovoEquipamento() {
-            abrirModal("Cadastrar Novo Equipamento", `
-                <form onsubmit="salvarEquipamento(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Nome do Equipamento</label>
-                        <input type="text" id="eqNome" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
-                        <select id="eqCat" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <option value="Servidor">Servidor</option>
-                            <option value="Rede">Rede</option>
-                            <option value="Armazenamento">Armazenamento</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Localização</label>
-                        <input type="text" id="eqLoc" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div class="flex justify-end space-x-3 pt-3">
-                        <button type="button" onclick="fecharModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Salvar Equipamento</button>
-                    </div>
-                </form>
-            `);
-        }
-
-        function salvarEquipamento(event) {
-            event.preventDefault();
-            const novo = {
-                id: estadoApp.equipamentos.length + 1,
-                nome: document.getElementById('eqNome').value,
-                categoria: document.getElementById('eqCat').value,
-                localizacao: document.getElementById('eqLoc').value,
-                status: "Operacional"
-            };
-            estadoApp.equipamentos.push(novo);
-            renderizarTabelaEquipamentos();
-            fecharModal();
-            mostrarNotificacao('Equipamento cadastrado com sucesso!', 'success');
-        }
-
-        function abrirNovoUsuario() {
-            abrirModal("Adicionar Novo Usuário", `
-                <form onsubmit="salvarUsuario(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Nome Completo</label>
-                        <input type="text" id="usrNome" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">E-mail Corporativo</label>
-                        <input type="email" id="usrEmail" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Função / Perfil</label>
-                        <select id="usrFuncao" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <option value="Administrador">Administrador</option>
-                            <option value="Suporte Técnico">Suporte Técnico</option>
-                            <option value="Auditor">Auditor</option>
-                        </select>
-                    </div>
-                    <div class="flex justify-end space-x-3 pt-3">
-                        <button type="button" onclick="fecharModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Criar Usuário</button>
-                    </div>
-                </form>
-            `);
-        }
-
-        function salvarUsuario(event) {
-            event.preventDefault();
-            const novo = {
-                id: estadoApp.usuarios.length + 1,
-                nome: document.getElementById('usrNome').value,
-                email: document.getElementById('usrEmail').value,
-                funcao: document.getElementById('usrFuncao').value,
-                status: "Ativo"
-            };
-            estadoApp.usuarios.push(novo);
-            renderizarTabelaUsuarios();
-            fecharModal();
-            mostrarNotificacao('Usuário criado com sucesso!', 'success');
-        }
-
-        function abrirNovoItemEstoque() {
-            abrirModal("Adicionar Peça ao Estoque", `
-                <form onsubmit="salvarItemEstoque(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Nome da Peça / Insumo</label>
-                        <input type="text" id="estPeca" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Quantidade Inicial</label>
-                        <input type="number" id="estQtd" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div class="flex justify-end space-x-3 pt-3">
-                        <button type="button" onclick="fecharModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Adicionar Peça</button>
-                    </div>
-                </form>
-            `);
-        }
-
-        function salvarItemEstoque(event) {
-            event.preventDefault();
-            const novo = {
-                id: estadoApp.estoque.length + 1,
-                peca: document.getElementById('estPeca').value,
-                quantidade: parseInt(document.getElementById('estQtd').value),
-                min: 5
-            };
-            estadoApp.estoque.push(novo);
-            renderizarEstoque();
-            fecharModal();
-            mostrarNotificacao('Item adicionado ao estoque!', 'success');
-        }
-
-        // ==========================================
-        // 6. RENDERIZAÇÃO DE TABELAS E COMPONENTES
-        // ==========================================
-        function renderizarTabelaEquipamentos() {
-            const tbody = document.getElementById('tabelaEquipamentosBody');
-            tbody.innerHTML = estadoApp.equipamentos.map(eq => `
-                <tr class="hover:bg-slate-50/50 transition-colors">
-                    <td class="py-4 px-6 font-medium text-slate-900">${eq.nome}</td>
-                    <td class="py-4 px-6 text-slate-600">${eq.categoria}</td>
-                    <td class="py-4 px-6 text-slate-600">${eq.localizacao}</td>
-                    <td class="py-4 px-6">
-                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full ${eq.status === 'Operacional' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${eq.status}</span>
-                    </td>
-                    <td class="py-4 px-6 text-right">
-                        <button onclick="removerEquipamento(${eq.id})" class="text-slate-400 hover:text-rose-600 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-            document.getElementById('statTotalEquipamentos').textContent = estadoApp.equipamentos.length + 1244;
-        }
-
-        function removerEquipamento(id) {
-            estadoApp.equipamentos = estadoApp.equipamentos.filter(e => e.id !== id);
-            renderizarTabelaEquipamentos();
-            mostrarNotificacao('Equipamento removido com sucesso.', 'info');
-        }
-
-        function renderizarTabelaUsuarios() {
-            const tbody = document.getElementById('tabelaUsuariosBody');
-            tbody.innerHTML = estadoApp.usuarios.map(u => `
-                <tr class="hover:bg-slate-50/50 transition-colors">
-                    <td class="py-4 px-6">
-                        <div class="font-medium text-slate-900">${u.nome}</div>
-                        <div class="text-xs text-slate-500">${u.email}</div>
-                    </td>
-                    <td class="py-4 px-6 text-slate-600">${u.funcao}</td>
-                    <td class="py-4 px-6">
-                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full ${u.status === 'Ativo' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${u.status}</span>
-                    </td>
-                    <td class="py-4 px-6 text-right">
-                        <button onclick="removerUsuario(${u.id})" class="text-slate-400 hover:text-rose-600 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function removerUsuario(id) {
-            estadoApp.usuarios = estadoApp.usuarios.filter(u => u.id !== id);
-            renderizarTabelaUsuarios();
-            mostrarNotificacao('Usuário removido.', 'info');
-        }
-
-        function renderizarEstoque() {
-            const grid = document.getElementById('gridEstoque');
-            grid.innerHTML = estadoApp.estoque.map(item => `
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="font-bold text-slate-900">${item.peca}</h3>
-                        <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fa-solid fa-box"></i></span>
-                    </div>
-                    <p class="text-2xl font-bold text-slate-800">${item.quantidade} <span class="text-xs font-normal text-slate-500">unidades</span></p>
-                    <div class="mt-4 flex justify-between items-center text-xs text-slate-500">
-                        <span>Mínimo ideal: ${item.min}</span>
-                        <button onclick="reporEstoque(${item.id})" class="text-indigo-600 font-medium hover:underline">Repor Item</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function reporEstoque(id) {
-            const item = estadoApp.estoque.find(i => i.id === id);
-            if(item) {
-                item.quantidade += 5;
-                renderizarEstoque();
-                mostrarNotificacao(`Estoque de "${item.peca}" atualizado!`, 'success');
+            if(role !== 'admin') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+            } else {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
             }
+
+            carregarDadosIniciais();
         }
 
-        // ==========================================
-        // 7. GRÁFICOS ANALÍTICOS COM CHART.JS
-        // ==========================================
-        function inicializarGraficos() {
-            const ctxMain = document.getElementById('mainChart').getContext('2d');
-            chartInstanciaMain = new Chart(ctxMain, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-                    datasets: [{
-                        label: 'Ativos Conectados',
-                        data: [980, 1020, 1050, 1100, 1120, 1150, 1180, 1220, 1248, 1260, 1280, 1300],
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.05)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
-                        x: { grid: { display: false }, ticks: { color: '#64748b' } }
-                    }
-                }
-            });
-
-            const ctxPie = document.getElementById('pieChart').getContext('2d');
-            chartInstanciaPie = new Chart(ctxPie, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Operacional', 'Manutenção', 'Inativo'],
-                    datasets: [{
-                        data: [1180, 42, 26],
-                        backgroundColor: ['#10b981', '#f59e0b', '#cbd5e1'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, color: '#64748b' } } }
-                }
-            });
+        function logout() {
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
         }
 
-        // ==========================================
-        // 8. AUTENTICAÇÃO GOOGLE E EXPORTAÇÃO PDF
-        // ==========================================
-        function inicializarGoogleAuth() {
+        function switchView(viewId, event) {
+            if(event) event.preventDefault();
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+            document.getElementById(viewId).classList.add('active-view');
+            const activeNav = document.querySelector(`.nav-item[data-target="${viewId}"]`);
+            if(activeNav) activeNav.classList.add('active');
+        }
+
+        function toggleNotifications(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('notif-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        window.onclick = function() {
+            document.getElementById('notif-dropdown').classList.remove('show');
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+        }
+
+        async function carregarDadosIniciais() {
             try {
-                const clientId = document.getElementById('inputClientIdConfig').value;
-                if (!clientId || clientId.includes('seu-client')) {
-                    console.warn("[GSI]: Client ID do Google ausente. Login unificado em modo simulado.");
-                    return;
+                const res = await fetch(`${API_URL}/api/dashboard/estatisticas`);
+                if(res.ok) {
+                    const data = await res.json();
+                    document.getElementById('stat-equipamentos').innerText = data.inventario?.total_ativos || 142;
+                    document.getElementById('stat-agenda').innerText = 18;
+                    document.getElementById('stat-operadores').innerText = 12;
+                    document.getElementById('stat-clientes').innerText = 24;
                 }
-                google.accounts.id.initialize({
-                    client_id: clientId,
-                    callback: (res) => { console.log("Google Auth Token recebido."); }
-                });
-            } catch (err) {
-                console.error("Erro ao carregar SDK do Google:", err);
+            } catch (e) {
+                console.log("Backend offline ou em modo estático, usando valores padrão.");
+                document.getElementById('stat-equipamentos').innerText = "142";
+                document.getElementById('stat-agenda').innerText = "18";
+                document.getElementById('stat-operadores').innerText = "12";
+                document.getElementById('stat-clientes').innerText = "24";
             }
         }
 
-        function exportarRelatorioPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFont("helvetica", "bold");
-            doc.text("Nexus ERP - Relatorio Analitico de Infraestrutura", 20, 20);
-            doc.setFont("helvetica", "normal");
-            doc.text(`Data de Emissao: ${new Date().toLocaleDateString()}`, 20, 30);
-            doc.text("Resumo Executivo:", 20, 45);
-            doc.text("- Total de Equipamentos Gerenciados: 1,248", 25, 55);
-            doc.text("- Status Geral Operacional: 94.5%", 25, 65);
-            doc.text("- Custo Operacional Mensal Consolidado: R$ 45.200,00", 25, 75);
-            doc.save("relatorio-nexus-erp.pdf");
-            mostrarNotificacao("Relatório PDF baixado com sucesso!", "success");
-        }
-
-        function salvarConfiguracoes() {
-            mostrarNotificacao("Configurações atualizadas com sucesso!", "success");
-        }
-
-        function executarLogout() {
-            if(confirm("Deseja realmente sair do sistema?")) {
-                window.location.reload();
-            }
-        }
+        function abrirNovoEquipamento() { alert("Abrir modal de novo equipamento"); }
+        function abrirNovoAgendamento() { alert("Abrir modal de novo agendamento"); }
+        function abrirNovaEscala() { alert("Abrir modal de nova escala"); }
+        function abrirNovoOperador() { alert("Abrir modal de novo operador"); }
+        function abrirNovoCliente() { alert("Abrir modal de novo cliente"); }
+        function abrirNovaReserva() { alert("Abrir modal de nova reserva"); }
+        function exportarRelatorio(tipo) { alert("Exportando relatório em " + tipo.toUpperCase()); }
+        function handleSearch() {}
     </script>
 </body>
 </html>
