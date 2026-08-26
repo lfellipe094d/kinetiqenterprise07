@@ -1,0 +1,1420 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinetiq Enterprise - Sistema de Gestão Audiovisual Completo</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #070a12;
+            --bg-sidebar: #0b1120;
+            --bg-card: #111827;
+            --bg-card-hover: #1f2937;
+            --border-color: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #f97316;
+            --primary-hover: #ea580c;
+            --accent-blue: #3b82f6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --sidebar-width: 270px;
+        }
+
+        body.light-theme {
+            --bg-main: #f1f5f9;
+            --bg-sidebar: #0f172a;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+        /* TELA DE AUTENTICAÇÃO */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #111827 0%, #070a12 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+        }
+
+        .login-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: var(--bg-main);
+            padding: 5px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .login-tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .login-tab-btn.active {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-logo img { width: 260px; height: auto; object-fit: contain; }
+        .login-logo h1 { font-size: 1rem; color: var(--text-muted); margin-top: 10px; font-weight: 400; }
+
+        .form-control {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-control label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .form-control input, .form-control select {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .form-control input:focus { border-color: var(--primary); }
+
+        .file-upload-wrapper { position: relative; display: inline-block; width: 100%; }
+        .file-upload-input { width: 100%; opacity: 0; position: absolute; left: 0; top: 0; height: 100%; cursor: pointer; }
+        .file-upload-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: var(--bg-main);
+            border: 1px dashed var(--border-color);
+            color: var(--text-muted);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn-primary-custom {
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-primary-custom:hover { background-color: var(--primary-hover); }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); }
+        .auth-divider::before { margin-right: .75em; }
+        .auth-divider::after { margin-left: .75em; }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: #fca5a5;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+
+        /* ESTRUTURA PRINCIPAL */
+        #app-container { display: flex; width: 100vw; height: 100vh; display: none; }
+
+        aside {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 16px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .sidebar-top .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+        .sidebar-top .brand img { width: 190px; object-fit: contain; }
+        .sidebar-top .brand span { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 6px; }
+
+        .nav-menu { display: flex; flex-direction: column; gap: 6px; list-style: none; overflow-y: auto; max-height: calc(100vh - 220px); }
+        .nav-item a { display: flex; align-items: center; gap: 14px; padding: 12px 16px; color: var(--text-muted); text-decoration: none; border-radius: 12px; font-size: 0.9rem; font-weight: 500; }
+        .nav-item a:hover, .nav-item.active a { background-color: var(--bg-card-hover); color: var(--text-main); }
+        .nav-item.active a { color: var(--primary); background: rgba(249, 115, 22, 0.12); }
+        .nav-item a i { font-size: 1.1rem; width: 22px; text-align: center; }
+
+        .sidebar-user { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border-color); }
+        .user-info { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+        .user-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .user-details h4 { font-size: 0.85rem; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-details span { font-size: 0.7rem; color: var(--text-muted); }
+        .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; }
+        .btn-logout:hover { color: var(--danger); }
+
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background-color: var(--bg-main); position: relative; }
+        header.topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 36px; border-bottom: 1px solid var(--border-color); background-color: var(--bg-main); position: sticky; top: 0; z-index: 100; }
+        .welcome-box h2 { font-size: 1.4rem; font-weight: 600; }
+        .welcome-box p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .topbar-actions { display: flex; align-items: center; gap: 16px; position: relative; }
+        .search-box { position: relative; }
+        .search-box input { background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 16px 10px 42px; border-radius: 12px; font-size: 0.85rem; width: 280px; outline: none; }
+        .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .notification-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+        .notification-badge { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background-color: var(--primary); border-radius: 50%; }
+
+        .notifications-dropdown { position: absolute; top: 55px; right: 140px; width: 340px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: none; flex-direction: column; z-index: 1000; overflow: hidden; }
+        .notifications-dropdown.show { display: flex; }
+        .notifications-header { padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-weight: 600; font-size: 0.9rem; }
+        .notification-item { padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); }
+
+        .btn-new-agenda { background-color: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .content-body { padding: 36px; display: flex; flex-direction: column; gap: 28px; flex: 1; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+
+        .stat-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+        .stat-card h3 { font-size: 0.85rem; color: var(--text-muted); }
+        .stat-card .stat-value { font-size: 2rem; font-weight: 700; margin-top: 10px; }
+        .stat-card img { position: absolute; right: 14px; bottom: 14px; max-height: 55px; opacity: 0.7; border-radius: 8px; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        @media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .panel { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 26px; }
+        .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .panel-header h2 { font-size: 1.05rem; font-weight: 600; }
+        .panel-header a { font-size: 0.85rem; color: var(--primary); text-decoration: none; }
+
+        .equipment-list, .schedule-list, .scale-list { display: flex; flex-direction: column; gap: 12px; }
+        .item-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: 14px; }
+        .item-details { display: flex; align-items: center; gap: 14px; }
+        .item-info h4 { font-size: 0.95rem; }
+        .item-info span { font-size: 0.75rem; color: var(--text-muted); }
+
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+        .status-badge.available { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .status-badge.reserved { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+
+        footer.app-footer { display: flex; align-items: center; justify-content: space-between; padding: 20px 36px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); }
+        .footer-partner { display: flex; align-items: center; gap: 8px; }
+
+        .app-view { display: none; }
+        .app-view.active-view { display: block; }
+        .table-container { width: 100%; overflow-x: auto; }
+        table.data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        table.data-table th, table.data-table td { padding: 16px 18px; border-bottom: 1px solid var(--border-color); }
+        table.data-table th { color: var(--text-muted); background-color: rgba(255, 255, 255, 0.02); }
+
+        .action-btns { display: flex; gap: 8px; }
+        .btn-icon { background: none; border: 1px solid var(--border-color); color: var(--text-muted); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-icon.delete:hover { border-color: var(--danger); color: var(--danger); }
+
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: 0.4s; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-logo">
+                <img src="kinetiq.png" alt="Kinetiq Logo">
+                <h1 id="auth-subtitle">Gestão Audiovisual Profissional</h1>
+            </div>
+
+            <div class="login-tabs" id="auth-tabs">
+                <button class="login-tab-btn active" onclick="switchLoginPortal('equipe')">Acesso Equipe</button>
+                <button class="login-tab-btn" onclick="switchLoginPortal('admin')">Acesso Admin</button>
+            </div>
+
+            <div id="login-error" class="error-message"></div>
+
+            <div id="portal-equipe">
+                <form id="form-login-equipe" onsubmit="handleEmailLogin(event)">
+                    <div class="form-control">
+                        <label>E-mail operacional</label>
+                        <input type="email" id="input-email-equipe" placeholder="exemplo@kinetiq.org" required>
+                    </div>
+                    <div class="form-control">
+                        <label>Senha de acesso</label>
+                        <input type="password" id="input-senha-equipe" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary-custom">Entrar no Sistema</button>
+                </form>
+
+                <div style="text-align: center; margin-top: 18px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">
+                        Não tem conta? <a href="#" onclick="toggleRegisterFormOperator(event, true)" style="color: var(--primary); text-decoration: none; font-weight: 600;">Cadastre-se</a>
+                    </p>
+                </div>
+
+                <div class="auth-divider">OU ACESSE COM</div>
+
+                <div id="google-signin-container" style="display: flex; justify-content: center;">
+                    <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
+                    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <form id="form-register-operator" style="display: none;" onsubmit="handleRegisterOperator(event)">
+                <div class="form-control">
+                    <label>Seu Nome Completo</label>
+                    <input type="text" id="reg-op-nome" placeholder="Nome Completo" required>
+                </div>
+                <div class="form-control">
+                    <label>E-mail Operacional</label>
+                    <input type="email" id="reg-op-email" placeholder="seu@email.com" required>
+                </div>
+                <div class="form-control">
+                    <label>Criar Senha</label>
+                    <input type="password" id="reg-op-senha" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary-custom">Finalizar Cadastro</button>
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="#" onclick="toggleRegisterFormOperator(event, false)" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600;">Voltar ao login</a>
+                </div>
+            </form>
+
+            <div id="portal-admin" style="display: none;">
+                <form id="form-login-admin" onsubmit="handleAdminLogin(event)">
+                    <div class="form-control">
+                        <label>E-mail do Administrador</label>
+                        <input type="email" id="input-email-admin" placeholder="admin@kinetiq.org" required>
+                    </div>
+                    <div class="form-control">
+                        <label>Senha Master</label>
+                        <input type="password" id="input-senha-admin" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary-custom">Autenticação Segura</button>
+                </form>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">
+                        Sua empresa não tem conta? <a href="#" onclick="toggleRegisterFormAdmin(event, true)" style="color: var(--primary); text-decoration: none; font-weight: 600;">Cadastrar Empresa</a>
+                    </p>
+                </div>
+            </div>
+
+            <form id="form-register-admin" style="display: none;" onsubmit="handleRegisterAdmin(event)">
+                <div class="form-control">
+                    <label>Seu Nome Completo (Admin)</label>
+                    <input type="text" id="reg-adm-nome" placeholder="Seu Nome" required>
+                </div>
+                <div class="form-control">
+                    <label>Nome da Empresa / Equipe</label>
+                    <input type="text" id="reg-adm-empresa-equipe" placeholder="Ex: Get Church Filmes" required>
+                </div>
+                <div class="form-control">
+                    <label>Telefone de Contato</label>
+                    <input type="tel" id="reg-adm-telefone" placeholder="(48) 99999-9999" required>
+                </div>
+                <div class="form-control">
+                    <label>E-mail Master</label>
+                    <input type="email" id="reg-adm-email" placeholder="admin@empresa.com" required>
+                </div>
+                <div class="form-control">
+                    <label>Criar Senha Master</label>
+                    <input type="password" id="reg-adm-senha" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary-custom">Cadastrar Empresa</button>
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="#" onclick="toggleRegisterFormAdmin(event, false)" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600;">Voltar ao login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <aside>
+            <div class="sidebar-top">
+                <div class="brand">
+                    <img src="kinetiq.png" alt="Kinetiq">
+                    <span>Enterprise System</span>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item active" data-target="view-dashboard">
+                        <a href="#" onclick="switchView('view-dashboard', event)"><i class="fa-solid fa-house"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item" data-target="view-equipamentos">
+                        <a href="#" onclick="switchView('view-equipamentos', event)"><i class="fa-solid fa-camera"></i> Equipamentos</a>
+                    </li>
+                    <li class="nav-item" data-target="view-agenda">
+                        <a href="#" onclick="switchView('view-agenda', event)"><i class="fa-solid fa-calendar-days"></i> Agenda</a>
+                    </li>
+                    <li class="nav-item" data-target="view-escalas">
+                        <a href="#" onclick="switchView('view-escalas', event)"><i class="fa-solid fa-users-gear"></i> Escalas</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-operadores">
+                        <a href="#" onclick="switchView('view-operadores', event)"><i class="fa-solid fa-headset"></i> Operadores</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-clientes">
+                        <a href="#" onclick="switchView('view-clientes', event)"><i class="fa-solid fa-address-book"></i> Clientes</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-reservas">
+                        <a href="#" onclick="switchView('view-reservas', event)"><i class="fa-solid fa-clipboard-check"></i> Reservas</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-relatorios">
+                        <a href="#" onclick="switchView('view-relatorios', event)"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
+                    </li>
+                    <li class="nav-item" data-target="view-configuracoes">
+                        <a href="#" onclick="switchView('view-configuracoes', event)"><i class="fa-solid fa-gear"></i> Configurações</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-user">
+                <div class="user-info">
+                    <img id="user-avatar" src="https://via.placeholder.com/150" alt="Avatar">
+                    <div class="user-details">
+                        <h4 id="user-name-display">Usuário</h4>
+                        <span id="user-role-display">Operador</span>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logout()" title="Sair"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+            </div>
+        </aside>
+
+        <main>
+            <header class="topbar">
+                <div class="welcome-box">
+                    <h2 id="topbar-title">Bem-vindo(a) de volta! 👋</h2>
+                    <p>Controle unificado da sua produção audiovisual.</p>
+                </div>
+                <div class="topbar-actions">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="input-search" placeholder="Pesquisar nos registros..." onkeyup="handleSearch()">
+                    </div>
+                    
+                    <button class="notification-btn" onclick="toggleNotifications(event)">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </button>
+
+                    <div class="notifications-dropdown" id="notif-dropdown">
+                        <div class="notifications-header">Notificações Recentes</div>
+                        <div class="notification-item"><strong>Sincronização OK</strong> Todos os módulos conectados.</div>
+                    </div>
+                </div>
+            </header>
+
+            <div id="view-dashboard" class="app-view active-view">
+                <div class="content-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div>
+                                <h3>Equipamentos</h3>
+                                <div class="stat-value" id="stat-equipamentos">0</div>
+                                <span class="stat-desc">Frota total cadastrada</span>
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=100" alt="Gear">
+                        </div>
+                        <div class="stat-card">
+                            <div>
+                                <h3>Agendamentos</h3>
+                                <div class="stat-value" id="stat-agenda">0</div>
+                                <span class="stat-desc">Produções ativas</span>
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=100" alt="Agenda">
+                        </div>
+                        <div class="stat-card admin-only">
+                            <div>
+                                <h3>Operadores</h3>
+                                <div class="stat-value" id="stat-operadores">0</div>
+                                <span class="stat-desc">Equipe técnica</span>
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Operators">
+                        </div>
+                        <div class="stat-card admin-only">
+                            <div>
+                                <h3>Clientes</h3>
+                                <div class="stat-value" id="stat-clientes">0</div>
+                                <span class="stat-desc">Parceiros ativos</span>
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=100" alt="Clients">
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h2>Status da Frota</h2>
+                                <a href="#" onclick="switchView('view-equipamentos', event)">Ver todos &gt;</a>
+                            </div>
+                            <div class="equipment-list" id="dashboard-equipment-list"></div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h2 id="escala-dashboard-title">Minha Escala</h2>
+                                <a href="#" onclick="switchView('view-escalas', event)">Ver todas</a>
+                            </div>
+                            <div class="scale-list" id="dashboard-scales-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-equipamentos" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Controle de Equipamentos</h2>
+                            <button class="btn-new-agenda admin-only" onclick="abrirNovoEquipamento()"><i class="fa-solid fa-plus"></i> Novo Item</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>Categoria</th>
+                                        <th>Nº Série</th>
+                                        <th>Status</th>
+                                        <th class="admin-only">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-equipamentos-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-agenda" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Agenda Geral de Produções</h2>
+                            <button class="btn-new-agenda admin-only" onclick="abrirNovoAgendamento()"><i class="fa-solid fa-plus"></i> Novo Evento</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Título</th>
+                                        <th>Data</th>
+                                        <th>Local</th>
+                                        <th class="admin-only">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-agenda-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-escalas" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2 id="escala-title">Escalas e Atribuições</h2>
+                            <button class="btn-new-agenda admin-only" onclick="abrirNovaEscala()"><i class="fa-solid fa-plus"></i> Escalar Operador</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Produção / Cargo</th>
+                                        <th>Operador Escalado</th>
+                                        <th>Data</th>
+                                        <th>Turno</th>
+                                        <th class="admin-only">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-escalas-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-operadores" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Equipe de Operadores</h2>
+                            <button class="btn-new-agenda admin-only" onclick="abrirNovoOperador()"><i class="fa-solid fa-plus"></i> Novo Operador</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>Função</th>
+                                        <th>E-mail</th>
+                                        <th class="admin-only">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-operadores-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-clientes" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Clientes Cadastrados</h2>
+                            <button class="btn-new-agenda admin-only" onclick="abrirNovoCliente()"><i class="fa-solid fa-plus"></i> Novo Cliente</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>E-mail</th>
+                                        <th>Empresa</th>
+                                        <th class="admin-only">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-clientes-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-reservas" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Reservas de Equipamentos</h2>
+                            <button class="btn-new-agenda admin-only" onclick="abrirNovaReserva()"><i class="fa-solid fa-plus"></i> Nova Reserva</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Equipamento</th>
+                                        <th>Data da Retirada</th>
+                                        <th class="admin-only">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-reservas-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-relatorios" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <h2>Métricas de Uso e Frequência</h2>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 10px; margin-bottom: 24px;">Controle gerencial de atividades e carga de equipamentos.</p>
+                        
+                        <div class="stats-grid" style="margin-bottom: 24px;">
+                            <div class="stat-card" style="background: var(--bg-main);">
+                                <h3>Taxa de Disponibilidade</h3>
+                                <div class="stat-value" id="rep-disponibilidade">0%</div>
+                                <span class="stat-desc" id="rep-disponibilidade-desc">Calculando...</span>
+                            </div>
+                            <div class="stat-card" style="background: var(--bg-main);">
+                                <h3>Reservas Ativas</h3>
+                                <div class="stat-value" id="rep-reservas">0</div>
+                                <span class="stat-desc">Acumulado do período</span>
+                            </div>
+                            <div class="stat-card" style="background: var(--bg-main);">
+                                <h3>Total de Clientes</h3>
+                                <div class="stat-value" id="rep-clientes">0</div>
+                                <span class="stat-desc">Base ativa</span>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-grid">
+                            <div class="panel" style="background: var(--bg-main); border: 1px solid var(--border-color);">
+                                <h3 style="font-size: 0.95rem; margin-bottom: 16px;">Equipamentos Mais Utilizados</h3>
+                                <div class="scale-list" id="rep-equipamentos-list"></div>
+                            </div>
+                            <div class="panel" style="background: var(--bg-main); border: 1px solid var(--border-color);">
+                                <h3 style="font-size: 0.95rem; margin-bottom: 16px;">Horas por Operador</h3>
+                                <div class="scale-list" id="rep-operadores-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-configuracoes" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 16px;">
+                                <h3>Configurações de Perfil</h3>
+                                <div class="form-control">
+                                    <label>Seu Nome</label>
+                                    <input type="text" id="config-nome" placeholder="Seu Nome">
+                                </div>
+                                <div class="form-control">
+                                    <label>E-mail Corporativo</label>
+                                    <input type="text" id="config-email" disabled style="opacity: 0.6;">
+                                </div>
+                                <div class="form-control">
+                                    <label>Foto de Perfil (Fazer Upload)</label>
+                                    <div class="file-upload-wrapper">
+                                        <div class="file-upload-button" id="file-upload-label">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i> Selecionar Imagem...
+                                        </div>
+                                        <input type="file" id="config-foto-file" class="file-upload-input" accept="image/*" onchange="previewProfileImage(this)">
+                                    </div>
+                                </div>
+                                <button class="btn-primary-custom" style="max-width: 220px;" onclick="salvarAlteracoesPerfil()">Salvar Alterações</button>
+                            </div>
+                            
+                            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 16px; border-left: 1px solid var(--border-color); padding-left: 40px;">
+                                <h3>Personalização & Sistema</h3>
+                                <div class="form-control">
+                                    <label>Preferência de Tema</label>
+                                    <div style="display:flex; align-items:center; gap: 14px; margin-top: 10px;">
+                                        <span style="font-size: 0.9rem; color: var(--text-muted);">Escuro</span>
+                                        <label class="switch">
+                                            <input type="checkbox" id="theme-toggle-checkbox" onchange="toggleTheme()">
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span style="font-size: 0.9rem; color: var(--text-muted);">Claro</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                <div>KINETIQ ENTERPRISE &copy; 2026 Todos os direitos reservados.</div>
+
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentUploadedImageBase64 = "";
+
+        const savedTheme = localStorage.getItem('kinetiq_theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const checkbox = document.getElementById('theme-toggle-checkbox');
+            if (checkbox) checkbox.checked = (savedTheme === 'light');
+
+            const token = localStorage.getItem('kinetiq_token');
+            if (token) {
+                mostrarAppPrincipal();
+            } else {
+                mostrarTelaLogin();
+            }
+        });
+
+        function getHeaders() {
+            const token = localStorage.getItem('kinetiq_token');
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+        }
+
+        function switchLoginPortal(portal) {
+            document.getElementById('login-error').style.display = 'none';
+            toggleRegisterFormOperator(null, false);
+            toggleRegisterFormAdmin(null, false);
+
+            const btns = document.querySelectorAll('.login-tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+
+            if (portal === 'equipe') {
+                document.getElementById('portal-equipe').style.display = 'block';
+                document.getElementById('portal-admin').style.display = 'none';
+                event.target.classList.add('active');
+            } else {
+                document.getElementById('portal-equipe').style.display = 'none';
+                document.getElementById('portal-admin').style.display = 'block';
+                event.target.classList.add('active');
+            }
+        }
+
+        function toggleRegisterFormOperator(event, showRegister) {
+            if (event) event.preventDefault();
+            document.getElementById('login-error').style.display = 'none';
+
+            const portalEquipe = document.getElementById('portal-equipe');
+            const formRegisterOperator = document.getElementById('form-register-operator');
+            const tabs = document.getElementById('auth-tabs');
+            const subtitle = document.getElementById('auth-subtitle');
+
+            if (showRegister) {
+                portalEquipe.style.display = 'none';
+                formRegisterOperator.style.display = 'block';
+                tabs.style.display = 'none';
+                subtitle.innerText = 'Cadastro Rápido de Operador';
+            } else {
+                portalEquipe.style.display = 'block';
+                formRegisterOperator.style.display = 'none';
+                tabs.style.display = 'flex';
+                subtitle.innerText = 'Gestão Audiovisual Profissional';
+            }
+        }
+
+        function toggleRegisterFormAdmin(event, showRegister) {
+            if (event) event.preventDefault();
+            document.getElementById('login-error').style.display = 'none';
+
+            const portalAdmin = document.getElementById('portal-admin');
+            const formRegisterAdmin = document.getElementById('form-register-admin');
+            const tabs = document.getElementById('auth-tabs');
+            const subtitle = document.getElementById('auth-subtitle');
+
+            if (showRegister) {
+                portalAdmin.style.display = 'none';
+                formRegisterAdmin.style.display = 'block';
+                tabs.style.display = 'none';
+                subtitle.innerText = 'Cadastrar Conta Administradora';
+            } else {
+                portalAdmin.style.display = 'block';
+                formRegisterAdmin.style.display = 'none';
+                tabs.style.display = 'flex';
+                subtitle.innerText = 'Gestão Audiovisual Profissional';
+            }
+        }
+
+        async function handleEmailLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('input-email-equipe').value;
+            const senha = document.getElementById('input-senha-equipe').value;
+            const errorBox = document.getElementById('login-error');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, senha })
+                });
+
+                if (!response.ok) throw new Error('E-mail ou senha incorretos.');
+
+                const data = await response.json();
+                localStorage.setItem('kinetiq_token', data.token);
+                localStorage.setItem('kinetiq_usuario', JSON.stringify(data.usuario));
+                mostrarAppPrincipal();
+            } catch (err) {
+                errorBox.innerText = err.message;
+                errorBox.style.display = 'block';
+            }
+        }
+
+        async function handleAdminLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('input-email-admin').value;
+            const senha = document.getElementById('input-senha-admin').value;
+            const errorBox = document.getElementById('login-error');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, senha })
+                });
+
+                if (!response.ok) throw new Error('Credenciais de Administrador inválidas.');
+
+                const data = await response.json();
+                if (data.usuario.funcao !== 'Administrador') {
+                    throw new Error('Acesso recusado. Esta conta não possui privilégios de Administrador.');
+                }
+
+                localStorage.setItem('kinetiq_token', data.token);
+                localStorage.setItem('kinetiq_usuario', JSON.stringify(data.usuario));
+                mostrarAppPrincipal();
+            } catch (err) {
+                errorBox.innerText = err.message;
+                errorBox.style.display = 'block';
+            }
+        }
+
+        async function handleRegisterOperator(event) {
+            event.preventDefault();
+            const nome = document.getElementById('reg-op-nome').value;
+            const email = document.getElementById('reg-op-email').value;
+            const senha = document.getElementById('reg-op-senha').value;
+            const errorBox = document.getElementById('login-error');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register/operator`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, email, senha })
+                });
+
+                if (!response.ok) {
+                    const payload = await response.json();
+                    throw new Error(payload.detail || 'Falha ao processar cadastro operacional.');
+                }
+
+                const data = await response.json();
+                localStorage.setItem('kinetiq_token', data.token);
+                localStorage.setItem('kinetiq_usuario', JSON.stringify(data.usuario));
+                mostrarAppPrincipal();
+            } catch (err) {
+                errorBox.innerText = err.message;
+                errorBox.style.display = 'block';
+            }
+        }
+
+        async function handleRegisterAdmin(event) {
+            event.preventDefault();
+            const nome = document.getElementById('reg-adm-nome').value;
+            const empresa_equipe = document.getElementById('reg-adm-empresa-equipe').value;
+            const telefone = document.getElementById('reg-adm-telefone').value;
+            const email = document.getElementById('reg-adm-email').value;
+            const senha = document.getElementById('reg-adm-senha').value;
+            const errorBox = document.getElementById('login-error');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register/admin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, empresa_equipe, telefone, email, senha })
+                });
+
+                if (!response.ok) {
+                    const payload = await response.json();
+                    throw new Error(payload.detail || 'Falha ao processar cadastro administrativo.');
+                }
+
+                const data = await response.json();
+                localStorage.setItem('kinetiq_token', data.token);
+                localStorage.setItem('kinetiq_usuario', JSON.stringify(data.usuario));
+                mostrarAppPrincipal();
+            } catch (err) {
+                errorBox.innerText = err.message;
+                errorBox.style.display = 'block';
+            }
+        }
+
+        function handleCredentialResponse(response) {
+            const credential = response.credential;
+            const errorBox = document.getElementById('login-error');
+
+            fetch(`${API_BASE}/auth/google`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credential })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Falha na autenticação integrada ao Google.');
+                return res.json();
+            })
+            .then(data => {
+                localStorage.setItem('kinetiq_token', data.token);
+                localStorage.setItem('kinetiq_usuario', JSON.stringify(data.usuario));
+                mostrarAppPrincipal();
+            })
+            .catch(err => {
+                errorBox.innerText = err.message;
+                errorBox.style.display = 'block';
+            });
+        }
+
+        function applyRoleRestrictions(user) {
+            const isAdmin = (user.funcao === 'Administrador');
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.classList.contains('admin-only')) {
+                    item.style.display = isAdmin ? 'block' : 'none';
+                }
+            });
+
+            document.querySelectorAll('.admin-only').forEach(elem => {
+                if (!elem.classList.contains('nav-item')) {
+                    elem.style.display = isAdmin ? 'flex' : 'none';
+                }
+            });
+        }
+
+        function mostrarTelaLogin() {
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('app-container').style.display = 'none';
+        }
+
+        function mostrarAppPrincipal() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+            
+            const usuarioStr = localStorage.getItem('kinetiq_usuario');
+            if (usuarioStr) {
+                try {
+                    const user = JSON.parse(usuarioStr);
+                    document.getElementById('user-name-display').innerText = user.nome || 'Usuário';
+                    document.getElementById('user-role-display').innerText = user.funcao || 'Operador';
+                    
+                    if (user.foto) {
+                        document.getElementById('user-avatar').src = user.foto;
+                    }
+                    
+                    document.getElementById('config-nome').value = user.nome || '';
+                    document.getElementById('config-email').value = user.email || '';
+                    
+                    currentUploadedImageBase64 = "";
+                    document.getElementById('file-upload-label').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Selecionar Imagem...`;
+                    document.getElementById('config-foto-file').value = "";
+
+                    applyRoleRestrictions(user);
+                } catch(e) {}
+            }
+            carregarDadosBackend();
+        }
+
+        function previewProfileImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentUploadedImageBase64 = e.target.result;
+                    document.getElementById('user-avatar').src = e.target.result;
+                    document.getElementById('file-upload-label').innerHTML = `<i class="fa-solid fa-check"></i> Imagem Carregada!`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function salvarAlteracoesPerfil() {
+            const nome = document.getElementById('config-nome').value;
+            const foto = currentUploadedImageBase64;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/profile`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ nome, foto })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('kinetiq_usuario', JSON.stringify(data.usuario));
+                    mostrarAppPrincipal();
+                    alert('Perfil atualizado com sucesso!');
+                } else {
+                    alert('Erro ao atualizar perfil.');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function logout() {
+            if (confirm('Deseja realmente encerrar sua sessão?')) {
+                localStorage.removeItem('kinetiq_token');
+                localStorage.removeItem('kinetiq_usuario');
+                mostrarTelaLogin();
+            }
+        }
+
+        function switchView(viewId, event) {
+            if (event) event.preventDefault();
+            
+            document.getElementById('input-search').value = '';
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
+            document.querySelectorAll('.nav-menu .nav-item').forEach(i => i.classList.remove('active'));
+
+            document.getElementById(viewId).classList.add('active-view');
+            handleSearch();
+            
+            if (event && event.currentTarget) {
+                const parentLi = event.currentTarget.closest('.nav-item');
+                if (parentLi) parentLi.classList.add('active');
+            } else {
+                const sidebarItem = document.querySelector(`.nav-menu [data-target="${viewId}"]`);
+                if (sidebarItem) sidebarItem.classList.add('active');
+            }
+        }
+
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light-theme');
+            localStorage.setItem('kinetiq_theme', isLight ? 'light' : 'dark');
+            const checkbox = document.getElementById('theme-toggle-checkbox');
+            if (checkbox) checkbox.checked = isLight;
+        }
+
+        function toggleNotifications(event) {
+            if (event) event.stopPropagation();
+            document.getElementById('notif-dropdown').classList.toggle('show');
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('input-search').value.toLowerCase().trim();
+            const activeView = document.querySelector('.app-view.active-view');
+            if (!activeView) return;
+
+            const rows = activeView.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        async function carregarDadosBackend() {
+            try {
+                const headers = getHeaders();
+                const user = JSON.parse(localStorage.getItem('kinetiq_usuario') || '{}');
+                const isAdmin = (user.funcao === 'Administrador');
+
+                const resEq = await fetch(`${API_BASE}/equipamentos`, { headers });
+                if (resEq.ok) {
+                    const eqData = await resEq.json();
+                    document.getElementById('stat-equipamentos').innerText = eqData.length;
+                    renderEquipamentosTable(eqData, isAdmin);
+                    renderDashboardEquipments(eqData);
+                }
+
+                const resAg = await fetch(`${API_BASE}/agenda`, { headers });
+                if (resAg.ok) {
+                    const agData = await resAg.json();
+                    document.getElementById('stat-agenda').innerText = agData.length;
+                    renderAgendaTable(agData, isAdmin);
+                }
+
+                const resEsc = await fetch(`${API_BASE}/escalas`, { headers });
+                if (resEsc.ok) {
+                    const escData = await resEsc.json();
+                    renderEscalasTable(escData, isAdmin);
+                    renderDashboardScales(escData);
+                }
+
+                if (isAdmin) {
+                    const resOp = await fetch(`${API_BASE}/operadores`, { headers });
+                    if (resOp.ok) {
+                        const opData = await resOp.json();
+                        document.getElementById('stat-operadores').innerText = opData.length;
+                        renderOperadoresTable(opData, isAdmin);
+                    }
+
+                    const resCli = await fetch(`${API_BASE}/clientes`, { headers });
+                    if (resCli.ok) {
+                        const cliData = await resCli.json();
+                        document.getElementById('stat-clientes').innerText = cliData.length;
+                        renderClientesTable(cliData, isAdmin);
+                    }
+
+                    const resRes = await fetch(`${API_BASE}/reservas`, { headers });
+                    if (resRes.ok) {
+                        const resData = await resRes.json();
+                        renderReservasTable(resData, isAdmin);
+                    }
+
+                    carregarRelatorios();
+                }
+            } catch (e) {
+                console.warn('Servidor offline ou carregando:', e);
+            }
+        }
+
+        function renderEquipamentosTable(data, isAdmin) {
+            document.getElementById('table-equipamentos-body').innerHTML = data.map(item => `
+                <tr>
+                    <td>#${item.id}</td>
+                    <td><strong>${item.nome}</strong></td>
+                    <td>${item.categoria}</td>
+                    <td>${item.numero_serie || 'N/A'}</td>
+                    <td><span class="status-badge ${item.disponivel ? 'available' : 'reserved'}">${item.disponivel ? 'Disponível' : 'Reservado'}</span></td>
+                    ${isAdmin ? `<td><button class="btn-icon delete" onclick="deletarItem('equipamentos', ${item.id})"><i class="fa-solid fa-trash"></i></button></td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        function renderDashboardEquipments(data) {
+            document.getElementById('dashboard-equipment-list').innerHTML = data.slice(0, 3).map(item => `
+                <div class="item-row">
+                    <div class="item-details">
+                        <div class="item-info">
+                            <h4>${item.nome}</h4>
+                            <span>${item.categoria}</span>
+                        </div>
+                    </div>
+                    <span class="status-badge ${item.disponivel ? 'available' : 'reserved'}">${item.disponivel ? 'Disponível' : 'Em Uso'}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderAgendaTable(data, isAdmin) {
+            document.getElementById('table-agenda-body').innerHTML = data.map(item => `
+                <tr>
+                    <td>#${item.id}</td>
+                    <td><strong>${item.titulo}</strong></td>
+                    <td>${item.data}</td>
+                    <td>${item.local || 'Estúdio'}</td>
+                    ${isAdmin ? `<td><button class="btn-icon delete" onclick="deletarItem('agenda', ${item.id})"><i class="fa-solid fa-trash"></i></button></td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        function renderEscalasTable(data, isAdmin) {
+            document.getElementById('table-escalas-body').innerHTML = data.map(item => `
+                <tr>
+                    <td>#${item.id}</td>
+                    <td><strong>${item.titulo}</strong></td>
+                    <td>${item.operador}</td>
+                    <td>${item.data}</td>
+                    <td>${item.turno || 'Integral'}</td>
+                    ${isAdmin ? `<td><button class="btn-icon delete" onclick="deletarItem('escalas', ${item.id})"><i class="fa-solid fa-trash"></i></button></td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        function renderDashboardScales(data) {
+            const list = document.getElementById('dashboard-scales-list');
+            if (data.length === 0) {
+                list.innerHTML = `<div class="item-row"><span style="color:var(--text-muted)">Sem escalas ativas.</span></div>`;
+                return;
+            }
+            list.innerHTML = data.slice(0, 3).map(item => `
+                <div class="item-row">
+                    <div class="item-details">
+                        <div class="item-info">
+                            <h4>${item.titulo}</h4>
+                            <span>Escalado: ${item.operador}</span>
+                        </div>
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">${item.turno}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderOperadoresTable(data, isAdmin) {
+            document.getElementById('table-operadores-body').innerHTML = data.map(item => `
+                <tr>
+                    <td>#${item.id}</td>
+                    <td><strong>${item.nome}</strong></td>
+                    <td>${item.funcao}</td>
+                    <td>${item.email}</td>
+                    ${isAdmin ? `<td><button class="btn-icon delete" onclick="deletarItem('operadores', ${item.id})"><i class="fa-solid fa-trash"></i></button></td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        function renderClientesTable(data, isAdmin) {
+            document.getElementById('table-clientes-body').innerHTML = data.map(item => `
+                <tr>
+                    <td>#${item.id}</td>
+                    <td><strong>${item.nome}</strong></td>
+                    <td>${item.email}</td>
+                    <td>${item.empresa || '-'}</td>
+                    ${isAdmin ? `<td><button class="btn-icon delete" onclick="deletarItem('clientes', ${item.id})"><i class="fa-solid fa-trash"></i></button></td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        function renderReservasTable(data, isAdmin) {
+            document.getElementById('table-reservas-body').innerHTML = data.map(item => `
+                <tr>
+                    <td>#${item.id}</td>
+                    <td><strong>${item.cliente}</strong></td>
+                    <td>${item.equipamento}</td>
+                    <td>${item.data}</td>
+                    ${isAdmin ? `<td><button class="btn-icon delete" onclick="deletarItem('reservas', ${item.id})"><i class="fa-solid fa-trash"></i></button></td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        async function carregarRelatorios() {
+            try {
+                const res = await fetch(`${API_BASE}/relatorios`, { headers: getHeaders() });
+                if (res.ok) {
+                    const data = await res.json();
+                    const pct = data.total_equipamentos > 0 ? Math.round((data.equipamentos_disponiveis / data.total_equipamentos) * 100) : 0;
+                    
+                    document.getElementById('rep-disponibilidade').innerText = `${pct}%`;
+                    document.getElementById('rep-disponibilidade-desc').innerText = `${data.equipamentos_disponiveis} de ${data.total_equipamentos} livres`;
+                    document.getElementById('rep-reservas').innerText = data.total_reservas;
+                    document.getElementById('rep-clientes').innerText = data.total_clientes;
+                    
+                    document.getElementById('rep-equipamentos-list').innerHTML = data.ranking_equipamentos.map(eq => `
+                        <div class="item-row" style="background: var(--bg-card)">
+                            <span><strong>${eq.nome}</strong></span>
+                            <span class="status-badge available" style="background: rgba(59, 130, 246, 0.15); color: var(--accent-blue);">${eq.usos} Saídas</span>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) {}
+        }
+
+        function abrirNovoEquipamento() {
+            const nome = prompt('Nome do Equipamento:');
+            if (!nome) return;
+            const categoria = prompt('Categoria (ex: Câmera, Lente):', 'Câmera');
+            const numero_serie = prompt('Número de Série:');
+
+            fetch(`${API_BASE}/equipamentos`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ nome, categoria, numero_serie, disponivel: true })
+            }).then(res => { if (res.ok) carregarDadosBackend(); });
+        }
+
+        function abrirNovoAgendamento() {
+            const titulo = prompt('Título do Projeto:');
+            if (!titulo) return;
+            const data = prompt('Data (AAAA-MM-DD):', '2026-07-25');
+            const local = prompt('Set de Filmagem:');
+
+            fetch(`${API_BASE}/agenda`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ titulo, data, local })
+            }).then(res => { if (res.ok) carregarDadosBackend(); });
+        }
+
+        function abrirNovaEscala() {
+            const titulo = prompt('Projeto/Tarefa:');
+            if (!titulo) return;
+            const operador = prompt('Operador Escalado:');
+            const data = prompt('Data (AAAA-MM-DD):', '2026-07-25');
+            const turno = prompt('Turno (Manhã, Tarde, Noite, Integral):', 'Integral');
+
+            fetch(`${API_BASE}/escalas`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ titulo, operador, data, turno })
+            }).then(res => { if (res.ok) carregarDadosBackend(); });
+        }
+
+        function abrirNovoOperador() {
+            const nome = prompt('Nome do Operador:');
+            if (!nome) return;
+            const funcao = prompt('Função:', 'Cinegrafista');
+            const email = prompt('E-mail corporativo:');
+
+            fetch(`${API_BASE}/operadores`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ nome, funcao, email })
+            }).then(res => { if (res.ok) carregarDadosBackend(); });
+        }
+
+        function abrirNovoCliente() {
+            const nome = prompt('Nome do Cliente:');
+            if (!nome) return;
+            const email = prompt('E-mail corporativo:');
+            const empresa = prompt('Empresa:', 'Get Church');
+
+            fetch(`${API_BASE}/clientes`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ nome, email, empresa })
+            }).then(res => { if (res.ok) carregarDadosBackend(); });
+        }
+
+        function abrirNovaReserva() {
+            const cliente = prompt('Cliente:');
+            if (!cliente) return;
+            const equipamento = prompt('Nome do Equipamento:');
+            const data = prompt('Data de Retirada:', '2026-07-20');
+
+            fetch(`${API_BASE}/reservas`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ cliente, equipamento, data })
+            }).then(res => { if (res.ok) carregarDadosBackend(); });
+        }
+
+        async function deletarItem(endpoint, id) {
+            if (confirm(`Excluir definitivamente o registro #${id}?`)) {
+                const res = await fetch(`${API_BASE}/${endpoint}/${id}`, { 
+                    method: 'DELETE',
+                    headers: getHeaders()
+                });
+                if (res.ok) carregarDadosBackend();
+            }
+        }
+    </script>
+</body>
+</html>
