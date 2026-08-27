@@ -1,164 +1,1017 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kinetiq Studio - Gestão Audiovisual Enterprise</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        kinetiqDark: '#070A12',
-                        kinetiqCard: '#111827',
-                        kinetiqOrange: '#F97316',
-                        kinetiqBlue: '#3B82F6',
-                    }
-                }
-            }
-        }
-    </script>
+    <title>Kinetiq Enterprise - Sistema de Gestão Audiovisual Completo</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        :root {
+            --bg-main: #070a12;
+            --bg-sidebar: #0b1120;
+            --bg-card: #111827;
+            --bg-card-hover: #1f2937;
+            --border-color: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #f97316;
+            --primary-hover: #ea580c;
+            --accent-blue: #3b82f6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --sidebar-width: 270px;
+        }
+
+        body.light-theme {
+            --bg-main: #f1f5f9;
+            --bg-sidebar: #0f172a;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+        /* TELA DE AUTENTICAÇÃO */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #111827 0%, #070a12 100%);
+            z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .login-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px; padding: 40px; width: 100%; max-width: 460px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+        }
+
+        .login-tabs {
+            display: flex; gap: 8px; margin-bottom: 24px; background: var(--bg-main);
+            padding: 5px; border-radius: 12px; border: 1px solid var(--border-color);
+        }
+
+        .login-tab-btn {
+            flex: 1; padding: 10px; background: none; border: none;
+            color: var(--text-muted); cursor: pointer; font-size: 0.85rem; font-weight: 600; border-radius: 8px;
+        }
+
+        .login-tab-btn.active { background-color: var(--primary); color: #ffffff; }
+
+        .login-logo { text-align: center; margin-bottom: 24px; }
+        .login-logo img { width: 260px; height: auto; object-fit: contain; }
+        .login-logo h1 { font-size: 1rem; color: var(--text-muted); margin-top: 10px; font-weight: 400; }
+
+        .form-control { margin-bottom: 18px; display: flex; flex-direction: column; gap: 8px; }
+        .form-control label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .form-control input, .form-control select {
+            background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main);
+            padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; outline: none;
+        }
+        .form-control input:focus, .form-control select:focus { border-color: var(--primary); }
+
+        .btn-primary-custom {
+            background-color: var(--primary); color: #ffffff; border: none; width: 100%;
+            padding: 14px; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer;
+        }
+        .btn-primary-custom:hover { background-color: var(--primary-hover); }
+
+        .auth-divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: var(--text-muted); font-size: 0.8rem; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); }
+        .auth-divider::before { margin-right: .75em; }
+        .auth-divider::after { margin-left: .75em; }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #fca5a5;
+            padding: 12px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 20px; display: none; text-align: center;
+        }
+
+        /* ESTRUTURA PRINCIPAL */
+        #app-container { display: none; width: 100vw; height: 100vh; }
+
+        aside {
+            width: var(--sidebar-width); background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 24px 16px; flex-shrink: 0; z-index: 10;
+        }
+
+        .sidebar-top .brand {
+            display: flex; flex-direction: column; gap: 4px; padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color); margin-bottom: 24px;
+        }
+        .sidebar-top .brand img { width: 190px; object-fit: contain; }
+        .sidebar-top .brand span { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 6px; }
+
+        .nav-menu { display: flex; flex-direction: column; gap: 6px; list-style: none; overflow-y: auto; max-height: calc(100vh - 220px); }
+        .nav-item a { display: flex; align-items: center; gap: 14px; padding: 12px 16px; color: var(--text-muted); text-decoration: none; border-radius: 12px; font-size: 0.9rem; font-weight: 500; }
+        .nav-item a:hover, .nav-item.active a { background-color: var(--bg-card-hover); color: var(--text-main); }
+        .nav-item.active a { color: var(--primary); background: rgba(249, 115, 22, 0.12); }
+        .nav-item a i { font-size: 1.1rem; width: 22px; text-align: center; }
+
+        .sidebar-user { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border-color); cursor: pointer; }
+        .user-info { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+        .user-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .user-details h4 { font-size: 0.85rem; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-details span { font-size: 0.7rem; color: var(--text-muted); }
+        .btn-logout { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; }
+        .btn-logout:hover { color: var(--danger); }
+
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background-color: var(--bg-main); position: relative; }
+        header.topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 36px; border-bottom: 1px solid var(--border-color); background-color: var(--bg-main); position: sticky; top: 0; z-index: 100; }
+        .welcome-box h2 { font-size: 1.4rem; font-weight: 600; }
+        .welcome-box p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .topbar-actions { display: flex; align-items: center; gap: 16px; position: relative; }
+        .search-box { position: relative; }
+        .search-box input { background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 16px 10px 42px; border-radius: 12px; font-size: 0.85rem; width: 280px; outline: none; }
+        .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .notification-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+        .notification-badge { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background-color: var(--primary); border-radius: 50%; }
+
+        .notifications-dropdown { position: absolute; top: 55px; right: 0; width: 340px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: none; flex-direction: column; z-index: 1000; overflow: hidden; }
+        .notifications-dropdown.show { display: flex; }
+        .notifications-header { padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-weight: 600; font-size: 0.9rem; }
+        .notification-item { padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); }
+
+        .btn-new-agenda { background-color: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .content-body { padding: 36px; display: flex; flex-direction: column; gap: 28px; flex: 1; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+
+        .stat-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+        .stat-card h3 { font-size: 0.85rem; color: var(--text-muted); }
+        .stat-card .stat-value { font-size: 2rem; font-weight: 700; margin-top: 10px; }
+        .stat-card img { position: absolute; right: 14px; bottom: 14px; max-height: 55px; opacity: 0.7; border-radius: 8px; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        @media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .panel { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 26px; }
+        .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .panel-header h2 { font-size: 1.05rem; font-weight: 600; }
+        .panel-header a { font-size: 0.85rem; color: var(--primary); text-decoration: none; }
+
+        .equipment-list, .scale-list { display: flex; flex-direction: column; gap: 12px; }
+        .item-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: 14px; }
+        .item-details { display: flex; align-items: center; gap: 14px; }
+        .item-info h4 { font-size: 0.95rem; }
+        .item-info span { font-size: 0.75rem; color: var(--text-muted); }
+
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+        .status-badge.available { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .status-badge.reserved { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+
+        footer.app-footer { display: flex; align-items: center; justify-content: space-between; padding: 20px 36px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); }
+        .footer-partner { display: flex; align-items: center; gap: 8px; }
+
+        .app-view { display: none; }
+        .app-view.active-view { display: block; }
+        .table-container { width: 100%; overflow-x: auto; }
+        table.data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        table.data-table th, table.data-table td { padding: 16px 18px; border-bottom: 1px solid var(--border-color); }
+        table.data-table th { color: var(--text-muted); background-color: rgba(255, 255, 255, 0.02); }
+
+        .action-btns { display: flex; gap: 8px; }
+        .btn-icon { background: none; border: 1px solid var(--border-color); color: var(--text-muted); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-icon.delete:hover { border-color: var(--danger); color: var(--danger); }
+
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: 0.4s; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* MODAIS FLUTUANTES GENÉRICOS */
+        .custom-modal {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7); z-index: 10000;
+            align-items: center; justify-content: center;
+        }
+        .modal-content-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 30px; width: 100%; max-width: 450px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
-<body class="bg-kinetiqDark text-white antialiased selection:bg-kinetiqOrange selection:text-white">
+<body>
 
-    <header class="fixed top-0 left-0 right-0 z-50 bg-kinetiqDark/80 backdrop-blur-md border-b border-gray-800">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <a href="index.html" class="flex items-center gap-2">
-                    <img src="kinetiq.png" alt="Kinetiq Logo" class="h-8 w-auto object-contain">
-                </a>
-                <span class="text-xs px-2 py-0.5 rounded-full bg-kinetiqOrange/10 border border-kinetiqOrange/20 text-kinetiqOrange font-semibold">Enterprise</span>
+    <div id="modal-perfil" class="custom-modal">
+        <div class="modal-content-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 1.1rem;">Meu Perfil e Segurança</h3>
+                <button onclick="fecharModal('modal-perfil')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <nav class="hidden md:flex items-center gap-8 text-sm text-gray-300 font-medium">
-                <a href="#recursos" class="hover:text-kinetiqOrange transition">Recursos</a>
-                <a href="#dashboard-preview" class="hover:text-kinetiqOrange transition">Plataforma</a>
-                <a href="#sobre" class="hover:text-kinetiqOrange transition">Sobre</a>
-            </nav>
-            <div>
-                <!-- CORRIGIDO: Aponta para app.html -->
-                <a href="app.html" class="bg-kinetiqOrange hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-orange-500/20 transition flex items-center gap-2 text-sm">
-                    <span>Acessar Sistema</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                </a>
-            </div>
-        </div>
-    </header>
-
-    <section class="pt-32 pb-20 md:pt-44 md:pb-32 px-6 relative overflow-hidden">
-        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-kinetiqOrange/10 blur-[150px] rounded-full pointer-events-none"></div>
-        <div class="max-w-5xl mx-auto text-center relative z-10">
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-900 border border-gray-800 text-gray-400 text-xs font-medium mb-6">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                Nova Versão 2.0 Disponível em Tempo Real
-            </div>
-            <h1 class="text-4xl md:text-6xl font-black tracking-tight leading-tight mb-6">
-                O Futuro da Gestão <span class="text-transparent bg-clip-text bg-gradient-to-r from-kinetiqOrange to-amber-500">Audiovisual</span>
-            </h1>
-            <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10">
-                Controle escalas de produção, inventário de equipamentos em tempo real e agendamentos de estúdios em uma única plataforma unificada.
-            </p>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <!-- CORRIGIDO: Aponta para app.html -->
-                <a href="app.html" class="w-full sm:w-auto bg-kinetiqOrange hover:bg-orange-600 text-white font-bold px-8 py-4 rounded-xl shadow-xl shadow-orange-500/25 transition text-base text-center">
-                    Entrar no Kinetiq Studio
-                </a>
-                <a href="#dashboard-preview" class="w-full sm:w-auto bg-gray-900 hover:bg-gray-800 border border-gray-800 text-white font-semibold px-8 py-4 rounded-xl transition text-base text-center">
-                    Ver Demonstração
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <section id="dashboard-preview" class="py-12 px-6">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-2xl md:text-3xl font-bold mb-3">Interface Moderna & Fluida</h2>
-                <p class="text-gray-400 text-sm md:text-base">Projetado para oferecer alta performance operacional no set de gravação.</p>
-            </div>
-            
-            <div class="bg-kinetiqCard p-3 md:p-5 rounded-3xl border border-gray-800 shadow-2xl shadow-black/80 relative group">
-                <div class="flex items-center justify-between mb-4 px-2">
-                    <div class="flex items-center gap-2">
-                        <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
-                        <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
-                        <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
-                    </div>
-                    <span class="text-xs text-gray-500 font-mono">kinetiq-studio-app.internal</span>
-                    <div></div>
+            <form onsubmit="salvarAlteracoesPerfil(event)">
+                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; gap: 10px;">
+                    <img id="preview-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar Preview" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+                    <label for="input-file-avatar" style="font-size: 0.8rem; color: var(--primary); cursor: pointer; font-weight: 600;">
+                        <i class="fa-solid fa-camera"></i> Alterar Foto de Perfil
+                    </label>
+                    <input type="file" id="input-file-avatar" accept="image/*" style="display: none;" onchange="previewNovaFoto(event)">
                 </div>
-                
-                <div class="rounded-2xl overflow-hidden bg-gray-950 aspect-video border border-gray-800 flex items-center justify-center relative">
-                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80" alt="Dashboard Preview" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition duration-700">
-                    <div class="absolute inset-0 bg-gradient-to-t from-kinetiqDark via-transparent to-transparent opacity-60"></div>
-                    <div class="absolute bottom-6 left-6 right-6 flex items-center justify-between">
-                        <div>
-                            <span class="text-xs text-kinetiqOrange font-bold uppercase tracking-wider">Painel Operacional</span>
-                            <h3 class="text-lg font-bold">Gestão Integrada de Produções e Câmeras</h3>
+                <div class="form-control">
+                    <label>Nome Completo</label>
+                    <input type="text" id="perfil-nome" required>
+                </div>
+                <div class="form-control">
+                    <label>E-mail de Acesso</label>
+                    <input type="email" id="perfil-email" required>
+                </div>
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+                <div class="form-control">
+                    <label>Nova Palavra-passe</label>
+                    <input type="password" id="perfil-nova-senha" placeholder="Deixe em branco para não alterar">
+                </div>
+                <button type="submit" class="btn-primary-custom" style="margin-top: 10px;">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-equipamento" class="custom-modal">
+        <div class="modal-content-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 1.1rem;">Registar Novo Equipamento</h3>
+                <button onclick="fecharModal('modal-equipamento')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="salvarNovoEquipamento(event)">
+                <div class="form-control">
+                    <label>Nome do Equipamento</label>
+                    <input type="text" id="eq-nome" placeholder="Ex: Sony FX3" required>
+                </div>
+                <div class="form-control">
+                    <label>Categoria</label>
+                    <input type="text" id="eq-categoria" placeholder="Ex: Câmeras, Lentes, Áudio" required>
+                </div>
+                <div class="form-control">
+                    <label>Número de Série</label>
+                    <input type="text" id="eq-serie" placeholder="SN-000000" required>
+                </div>
+                <button type="submit" class="btn-primary-custom" style="margin-top: 10px;">Adicionar Equipamento</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-agenda" class="custom-modal">
+        <div class="modal-content-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 1.1rem;">Novo Evento / Agendamento</h3>
+                <button onclick="fecharModal('modal-agenda')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="salvarNovoAgendamento(event)">
+                <div class="form-control">
+                    <label>Título da Produção</label>
+                    <input type="text" id="ag-titulo" placeholder="Ex: Gravação Corporativa" required>
+                </div>
+                <div class="form-control">
+                    <label>Data</label>
+                    <input type="text" id="ag-data" placeholder="DD/MM/AAAA" required>
+                </div>
+                <div class="form-control">
+                    <label>Local</label>
+                    <input type="text" id="ag-local" placeholder="Ex: Estúdio Principal" required>
+                </div>
+                <button type="submit" class="btn-primary-custom" style="margin-top: 10px;">Criar Agendamento</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-escala" class="custom-modal">
+        <div class="modal-content-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 1.1rem;">Escalar Operador</h3>
+                <button onclick="fecharModal('modal-escala')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="salvarNovaEscala(event)">
+                <div class="form-control">
+                    <label>Cargo / Função na Produção</label>
+                    <input type="text" id="esc-cargo" placeholder="Ex: Operador de Câmeras" required>
+                </div>
+                <div class="form-control">
+                    <label>Nome do Operador</label>
+                    <input type="text" id="esc-operador" placeholder="Ex: Carlos Silva" required>
+                </div>
+                <div class="form-control">
+                    <label>Data</label>
+                    <input type="text" id="esc-data" placeholder="DD/MM/AAAA" required>
+                </div>
+                <div class="form-control">
+                    <label>Turno</label>
+                    <input type="text" id="esc-turno" placeholder="Ex: Integral / Manhã" required>
+                </div>
+                <button type="submit" class="btn-primary-custom" style="margin-top: 10px;">Confirmar Escala</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-operador" class="custom-modal">
+        <div class="modal-content-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 1.1rem;">Registar Novo Operador</h3>
+                <button onclick="fecharModal('modal-operador')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="salvarNovoOperador(event)">
+                <div class="form-control">
+                    <label>Nome Completo</label>
+                    <input type="text" id="op-nome" placeholder="Nome do operador" required>
+                </div>
+                <div class="form-control">
+                    <label>E-mail Operacional</label>
+                    <input type="email" id="op-email" placeholder="operador@kinetiq.org" required>
+                </div>
+                <div class="form-control">
+                    <label>Especialidade / Função</label>
+                    <input type="text" id="op-funcao" placeholder="Ex: Diretor de Fotografia" required>
+                </div>
+                <button type="submit" class="btn-primary-custom" style="margin-top: 10px;">Registar Operador</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-cliente" class="custom-modal">
+        <div class="modal-content-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 1.1rem;">Registar Novo Cliente</h3>
+                <button onclick="fecharModal('modal-cliente')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="salvarNovoCliente(event)">
+                <div class="form-control">
+                    <label>Nome / Empresa</label>
+                    <input type="text" id="cli-nome" placeholder="Nome do cliente" required>
+                </div>
+                <div class="form-control">
+                    <label>Contacto Telefónico</label>
+                    <input type="text" id="cli-contato" placeholder="+351 910000000" required>
+                </div>
+                <div class="form-control">
+                    <label>E-mail Corporativo</label>
+                    <input type="email" id="cli-email" placeholder="contacto@empresa.com" required>
+                </div>
+                <button type="submit" class="btn-primary-custom" style="margin-top: 10px;">Registar Cliente</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-reserva" class="custom-modal">
+        <div class="modal-content-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 1.1rem;">Nova Reserva de Equipamento</h3>
+                <button onclick="fecharModal('modal-reserva')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="salvarNovaReserva(event)">
+                <div class="form-control">
+                    <label>Equipamento Desejado</label>
+                    <input type="text" id="res-equipamento" placeholder="Ex: Sony FX3" required>
+                </div>
+                <div class="form-control">
+                    <label>Nome do Solicitante</label>
+                    <input type="text" id="res-solicitante" placeholder="Nome do técnico" required>
+                </div>
+                <div class="form-control">
+                    <label>Período de Utilização</label>
+                    <input type="text" id="res-periodo" placeholder="Ex: 28/08 - 29/08" required>
+                </div>
+                <button type="submit" class="btn-primary-custom" style="margin-top: 10px;">Efetuar Reserva</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-logo">
+                <a href="#">
+                    <img src="kinetiq.png" alt="Kinetiq Logo">
+                </a>
+                <h1 id="auth-subtitle">Gestão Audiovisual Profissional</h1>
+            </div>
+
+            <div class="login-tabs" id="auth-tabs">
+                <button class="login-tab-btn active" onclick="switchLoginPortal('equipe')">Acesso Equipa</button>
+                <button class="login-tab-btn" onclick="switchLoginPortal('admin')">Acesso Admin</button>
+            </div>
+
+            <div id="login-error" class="error-message"></div>
+
+            <div id="portal-equipe">
+                <form onsubmit="handleEmailLogin(event)">
+                    <div class="form-control">
+                        <label>E-mail operacional</label>
+                        <input type="email" id="input-email-equipe" placeholder="exemplo@kinetiq.org" required>
+                    </div>
+                    <div class="form-control">
+                        <label>Palavra-passe</label>
+                        <input type="password" id="input-senha-equipe" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary-custom">Entrar no Sistema</button>
+                </form>
+                <div style="text-align: center; margin-top: 18px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">
+                        Não tem conta? <a href="#" onclick="toggleRegisterFormOperator(event, true)" style="color: var(--primary); text-decoration: none; font-weight: 600;">Registe-se</a>
+                    </p>
+                </div>
+            </div>
+
+            <form id="form-register-operator" style="display: none;" onsubmit="handleRegisterOperator(event)">
+                <div class="form-control">
+                    <label>Seu Nome Completo</label>
+                    <input type="text" required>
+                </div>
+                <div class="form-control">
+                    <label>E-mail Operacional</label>
+                    <input type="email" required>
+                </div>
+                <div class="form-control">
+                    <label>Criar Palavra-passe</label>
+                    <input type="password" required>
+                </div>
+                <button type="submit" class="btn-primary-custom">Finalizar Registo</button>
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="#" onclick="toggleRegisterFormOperator(event, false)" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600;">Voltar ao login</a>
+                </div>
+            </form>
+
+            <div id="portal-admin" style="display: none;">
+                <form onsubmit="handleAdminLogin(event)">
+                    <div class="form-control">
+                        <label>E-mail do Administrador</label>
+                        <input type="email" required>
+                    </div>
+                    <div class="form-control">
+                        <label>Palavra-passe Master</label>
+                        <input type="password" required>
+                    </div>
+                    <button type="submit" class="btn-primary-custom">Autenticação Segura</button>
+                </form>
+                <div style="text-align: center; margin-top: 20px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">
+                        A sua empresa não tem conta? <a href="#" onclick="toggleRegisterFormAdmin(event, true)" style="color: var(--primary); text-decoration: none; font-weight: 600;">Registar Empresa</a>
+                    </p>
+                </div>
+            </div>
+
+            <form id="form-register-admin" style="display: none;" onsubmit="handleRegisterAdmin(event)">
+                <div class="form-control">
+                    <label>Seu Nome Completo (Admin)</label>
+                    <input type="text" required>
+                </div>
+                <div class="form-control">
+                    <label>Nome da Empresa / Equipa</label>
+                    <input type="text" required>
+                </div>
+                <div class="form-control">
+                    <label>Contacto Telefónico</label>
+                    <input type="tel" required>
+                </div>
+                <div class="form-control">
+                    <label>E-mail Master</label>
+                    <input type="email" required>
+                </div>
+                <div class="form-control">
+                    <label>Criar Palavra-passe Master</label>
+                    <input type="password" required>
+                </div>
+                <button type="submit" class="btn-primary-custom">Registar Empresa</button>
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="#" onclick="toggleRegisterFormAdmin(event, false)" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600;">Voltar ao login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <aside>
+            <div class="sidebar-top">
+                <div class="brand">
+                    <a href="#"><img src="kinetiq.png" alt="Kinetiq"></a>
+                    <span>Enterprise System</span>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item active" data-target="view-dashboard">
+                        <a href="#" onclick="switchView('view-dashboard', event)"><i class="fa-solid fa-house"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item" data-target="view-equipamentos">
+                        <a href="#" onclick="switchView('view-equipamentos', event)"><i class="fa-solid fa-camera"></i> Equipamentos</a>
+                    </li>
+                    <li class="nav-item" data-target="view-agenda">
+                        <a href="#" onclick="switchView('view-agenda', event)"><i class="fa-solid fa-calendar-days"></i> Agenda</a>
+                    </li>
+                    <li class="nav-item" data-target="view-escalas">
+                        <a href="#" onclick="switchView('view-escalas', event)"><i class="fa-solid fa-users-gear"></i> Escalas</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-operadores">
+                        <a href="#" onclick="switchView('view-operadores', event)"><i class="fa-solid fa-headset"></i> Operadores</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-clientes">
+                        <a href="#" onclick="switchView('view-clientes', event)"><i class="fa-solid fa-address-book"></i> Clientes</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-reservas">
+                        <a href="#" onclick="switchView('view-reservas', event)"><i class="fa-solid fa-clipboard-check"></i> Reservas</a>
+                    </li>
+                    <li class="nav-item admin-only" data-target="view-relatorios">
+                        <a href="#" onclick="switchView('view-relatorios', event)"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
+                    </li>
+                    <li class="nav-item" data-target="view-configuracoes">
+                        <a href="#" onclick="switchView('view-configuracoes', event)"><i class="fa-solid fa-gear"></i> Configurações</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-user" onclick="abrirModalPerfil()" title="Editar Perfil">
+                <div class="user-info">
+                    <img id="user-avatar" src="https://via.placeholder.com/150" alt="Avatar">
+                    <div class="user-details">
+                        <h4 id="user-name-display">Utilizador</h4>
+                        <span id="user-role-display">Operador</span>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="event.stopPropagation(); logout();" title="Sair"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+            </div>
+        </aside>
+
+        <main>
+            <header class="topbar">
+                <div class="welcome-box">
+                    <h2>Bem-vindo(a) de volta! 👋</h2>
+                    <p>Controlo unificado da sua produção audiovisual.</p>
+                </div>
+                <div class="topbar-actions">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="input-search" placeholder="Pesquisar registos..." onkeyup="handleSearch()">
+                    </div>
+                    <button class="notification-btn" onclick="toggleNotifications(event)">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </button>
+                    <div class="notifications-dropdown" id="notif-dropdown">
+                        <div class="notifications-header">Notificações Recentes</div>
+                        <div class="notification-item"><strong>Sincronização OK</strong> Módulos operacionais.</div>
+                    </div>
+                </div>
+            </header>
+
+            <div id="view-dashboard" class="app-view active-view">
+                <div class="content-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div><h3>Equipamentos</h3><div class="stat-value" id="stat-equipamentos">0</div></div>
+                            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=100" alt="Gear">
                         </div>
-                        <!-- CORRIGIDO: Aponta para app.html -->
-                        <a href="app.html" class="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white text-xs font-semibold px-4 py-2 rounded-lg border border-white/10 transition">
-                            Abrir App 🚀
-                        </a>
+                        <div class="stat-card">
+                            <div><h3>Agendamentos</h3><div class="stat-value" id="stat-agenda">0</div></div>
+                            <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=100" alt="Agenda">
+                        </div>
+                        <div class="stat-card admin-only">
+                            <div><h3>Operadores</h3><div class="stat-value" id="stat-operadores">0</div></div>
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Operators">
+                        </div>
+                        <div class="stat-card admin-only">
+                            <div><h3>Clientes</h3><div class="stat-value" id="stat-clientes">0</div></div>
+                            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=100" alt="Clients">
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <section id="recursos" class="py-24 px-6 max-w-7xl mx-auto">
-        <div class="text-center mb-16">
-            <span class="text-kinetiqOrange text-xs font-bold uppercase tracking-widest">Recursos Enterprise</span>
-            <h2 class="text-3xl md:text-4xl font-black mt-2">Tudo o que sua equipe precisa</h2>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="bg-kinetiqCard p-8 rounded-2xl border border-gray-800 hover:border-kinetiqOrange/50 transition group">
-                <div class="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-kinetiqOrange text-2xl mb-6 group-hover:scale-110 transition">
-                    📅
+            <div id="view-equipamentos" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Controlo de Equipamentos</h2>
+                            <button class="btn-new-agenda" onclick="abrirModal('modal-equipamento')"><i class="fa-solid fa-plus"></i> Novo Item</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead><tr><th>ID</th><th>Nome</th><th>Categoria</th><th>Nº Série</th><th>Status</th><th>Ações</th></tr></thead>
+                                <tbody id="table-equipamentos-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <h3 class="text-xl font-bold mb-3">Escalas em Tempo Real</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">
-                    Distribuição automatizada de turnos e operadores para transmissões, cultos e gravações externas sem conflitos de agenda.
-                </p>
             </div>
 
-            <div class="bg-kinetiqCard p-8 rounded-2xl border border-gray-800 hover:border-kinetiqOrange/50 transition group">
-                <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-kinetiqBlue text-2xl mb-6 group-hover:scale-110 transition">
-                    🎥
+            <div id="view-agenda" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Agenda Geral de Produções</h2>
+                            <button class="btn-new-agenda" onclick="abrirModal('modal-agenda')"><i class="fa-solid fa-plus"></i> Novo Evento</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead><tr><th>ID</th><th>Título</th><th>Data</th><th>Local</th><th>Ações</th></tr></thead>
+                                <tbody id="table-agenda-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <h3 class="text-xl font-bold mb-3">Inventário de Equipamentos</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">
-                    Controle de câmeras, lentes, microfones e iluminação com status de disponibilidade instantâneo para toda a equipe técnica.
-                </p>
             </div>
 
-            <div class="bg-kinetiqCard p-8 rounded-2xl border border-gray-800 hover:border-kinetiqOrange/50 transition group">
-                <div class="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 text-2xl mb-6 group-hover:scale-110 transition">
-                    📱
+            <div id="view-escalas" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Escalas e Atribuições</h2>
+                            <button class="btn-new-agenda" onclick="abrirModal('modal-escala')"><i class="fa-solid fa-plus"></i> Escalar Operador</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead><tr><th>ID</th><th>Produção / Cargo</th><th>Operador Escalado</th><th>Data</th><th>Turno</th><th>Ações</th></tr></thead>
+                                <tbody id="table-escalas-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <h3 class="text-xl font-bold mb-3">Mobilidade Total (Mobile)</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">
-                    Acesso móvel integrado via Flutter para operadores consultarem suas escalas e status de equipamentos diretamente no set.
-                </p>
             </div>
-        </div>
-    </section>
 
-    <footer class="border-t border-gray-800 py-12 px-6 text-center text-gray-500 text-sm">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-2">
-                <img src="kinetiq.png" alt="Kinetiq Logo" class="h-6 w-auto object-contain">
+            <div id="view-operadores" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Gestão de Operadores</h2>
+                            <button class="btn-new-agenda" onclick="abrirModal('modal-operador')"><i class="fa-solid fa-plus"></i> Novo Operador</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead><tr><th>ID</th><th>Nome Completo</th><th>E-mail</th><th>Função</th><th>Ações</th></tr></thead>
+                                <tbody id="table-operadores-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p>&copy; 2026 Kinetiq Enterprise System. Todos os direitos reservados.</p>
-            <!-- CORRIGIDO: Aponta para app.html -->
-            <a href="app.html" class="text-gray-400 hover:text-kinetiqOrange transition">Área de Login</a>
-        </div>
-    </footer>
 
+            <div id="view-clientes" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Gestão de Clientes</h2>
+                            <button class="btn-new-agenda" onclick="abrirModal('modal-cliente')"><i class="fa-solid fa-plus"></i> Novo Cliente</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead><tr><th>ID</th><th>Nome / Empresa</th><th>Contacto</th><th>E-mail</th><th>Ações</th></tr></thead>
+                                <tbody id="table-clientes-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-reservas" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Controlo de Reservas de Equipamentos</h2>
+                            <button class="btn-new-agenda" onclick="abrirModal('modal-reserva')"><i class="fa-solid fa-plus"></i> Nova Reserva</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead><tr><th>ID</th><th>Equipamento</th><th>Solicitante</th><th>Período</th><th>Status</th><th>Ações</th></tr></thead>
+                                <tbody id="table-reservas-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-relatorios" class="app-view">
+                <div class="content-body">
+                    <div class="panel">
+                        <div class="panel-header"><h2>Relatórios Operacionais e Financeiros</h2></div>
+                        <div style="display: flex; gap: 15px;">
+                            <button class="btn-new-agenda" onclick="exportarRelatorio('pdf')"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
+                            <button class="btn-new-agenda" onclick="exportarRelatorio('csv')" style="background-color: var(--accent-blue);"><i class="fa-solid fa-file-csv"></i> Exportar CSV</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-configuracoes" class="app-view">
+                <div class="content-body">
+                    <div class="panel" style="max-width: 600px;">
+                        <div class="panel-header"><h2>Configurações do Sistema</h2></div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <h4 style="font-size: 0.95rem;">Modo Claro / Escuro</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">Alternar a aparência da interface</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" onchange="toggleTheme()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="app-footer">
+                <span>&copy; 2026 Kinetiq Enterprise. Todos os direitos reservados.</span>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        let dbKinetiq = {
+            equipamentos: [
+                { id: "#01", nome: "Sony FX3 Cinema Line", categoria: "Câmeras", serie: "SN-983421", status: "Disponível" },
+                { id: "#02", nome: "Canon EOS R5", categoria: "Câmeras", serie: "SN-445129", status: "Disponível" }
+            ],
+            agenda: [
+                { id: "#101", titulo: "Gravação Corporativa", data: "28/08/2026", local: "Estúdio Principal" }
+            ],
+            escalas: [
+                { id: "#501", cargo: "Operador de Câmeras", operador: "Carlos Silva", data: "28/08/2026", turno: "Integral" }
+            ],
+            operadores: [
+                { id: "#01", nome: "Carlos Silva", email: "carlos@kinetiq.org", funcao: "Diretor de Fotografia" }
+            ],
+            clientes: [
+                { id: "#C1", nome: "Get Church Filmes", contato: "+351 910000000", email: "contato@getchurch.com" }
+            ],
+            reservas: [
+                { id: "#R1", equipamento: "Sony FX3", solicitante: "Carlos Silva", periodo: "28/08 - 29/08", status: "Reservado" }
+            ]
+        };
+
+        function renderizarTabelas() {
+            const tbodyEq = document.getElementById('table-equipamentos-body');
+            if(tbodyEq) {
+                tbodyEq.innerHTML = dbKinetiq.equipamentos.map(item => `
+                    <tr><td>${item.id}</td><td>${item.nome}</td><td>${item.categoria}</td><td>${item.serie}</td><td><span class="status-badge available">${item.status}</span></td>
+                    <td><div class="action-btns"><button class="btn-icon delete" title="Excluir" onclick="deletarItem('equipamentos', '${item.id}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>
+                `).join('');
+            }
+
+            const tbodyAgenda = document.getElementById('table-agenda-body');
+            if(tbodyAgenda) {
+                tbodyAgenda.innerHTML = dbKinetiq.agenda.map(item => `
+                    <tr><td>${item.id}</td><td>${item.titulo}</td><td>${item.data}</td><td>${item.local}</td>
+                    <td><div class="action-btns"><button class="btn-icon delete" title="Excluir" onclick="deletarItem('agenda', '${item.id}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>
+                `).join('');
+            }
+
+            const tbodyEscalas = document.getElementById('table-escalas-body');
+            if(tbodyEscalas) {
+                tbodyEscalas.innerHTML = dbKinetiq.escalas.map(item => `
+                    <tr><td>${item.id}</td><td>${item.cargo}</td><td>${item.operador}</td><td>${item.data}</td><td>${item.turno}</td>
+                    <td><div class="action-btns"><button class="btn-icon delete" title="Excluir" onclick="deletarItem('escalas', '${item.id}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>
+                `).join('');
+            }
+
+            const tbodyOps = document.getElementById('table-operadores-body');
+            if(tbodyOps) {
+                tbodyOps.innerHTML = dbKinetiq.operadores.map(item => `
+                    <tr><td>${item.id}</td><td>${item.nome}</td><td>${item.email}</td><td>${item.funcao}</td>
+                    <td><div class="action-btns"><button class="btn-icon delete" title="Excluir" onclick="deletarItem('operadores', '${item.id}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>
+                `).join('');
+            }
+
+            const tbodyClientes = document.getElementById('table-clientes-body');
+            if(tbodyClientes) {
+                tbodyClientes.innerHTML = dbKinetiq.clientes.map(item => `
+                    <tr><td>${item.id}</td><td>${item.nome}</td><td>${item.contato}</td><td>${item.email}</td>
+                    <td><div class="action-btns"><button class="btn-icon delete" title="Excluir" onclick="deletarItem('clientes', '${item.id}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>
+                `).join('');
+            }
+
+            const tbodyReservas = document.getElementById('table-reservas-body');
+            if(tbodyReservas) {
+                tbodyReservas.innerHTML = dbKinetiq.reservas.map(item => `
+                    <tr><td>${item.id}</td><td>${item.equipamento}</td><td>${item.solicitante}</td><td>${item.periodo}</td><td><span class="status-badge reserved">${item.status}</span></td>
+                    <td><div class="action-btns"><button class="btn-icon delete" title="Excluir" onclick="deletarItem('reservas', '${item.id}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>
+                `).join('');
+            }
+
+            document.getElementById('stat-equipamentos').innerText = dbKinetiq.equipamentos.length;
+            document.getElementById('stat-agenda').innerText = dbKinetiq.agenda.length;
+            document.getElementById('stat-operadores').innerText = dbKinetiq.operadores.length;
+            document.getElementById('stat-clientes').innerText = dbKinetiq.clientes.length;
+        }
+
+        function abrirModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function fecharModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function deletarItem(modulo, id) {
+            if(confirm(`Deseja realmente eliminar o registo ${id}?`)) {
+                dbKinetiq[modulo] = dbKinetiq[modulo].filter(item => item.id !== id);
+                renderizarTabelas();
+            }
+        }
+
+        function salvarNovoEquipamento(e) {
+            e.preventDefault();
+            const nome = document.getElementById('eq-nome').value;
+            const categoria = document.getElementById('eq-categoria').value;
+            const serie = document.getElementById('eq-serie').value;
+            dbKinetiq.equipamentos.push({ id: `#0${dbKinetiq.equipamentos.length + 1}`, nome, categoria, serie, status: "Disponível" });
+            renderizarTabelas();
+            fecharModal('modal-equipamento');
+            e.target.reset();
+        }
+
+        function salvarNovoAgendamento(e) {
+            e.preventDefault();
+            const titulo = document.getElementById('ag-titulo').value;
+            const data = document.getElementById('ag-data').value;
+            const local = document.getElementById('ag-local').value;
+            dbKinetiq.agenda.push({ id: `#10${dbKinetiq.agenda.length + 1}`, titulo, data, local });
+            renderizarTabelas();
+            fecharModal('modal-agenda');
+            e.target.reset();
+        }
+
+        function salvarNovaEscala(e) {
+            e.preventDefault();
+            const cargo = document.getElementById('esc-cargo').value;
+            const operador = document.getElementById('esc-operador').value;
+            const data = document.getElementById('esc-data').value;
+            const turno = document.getElementById('esc-turno').value;
+            dbKinetiq.escalas.push({ id: `#50${dbKinetiq.escalas.length + 1}`, cargo, operador, data, turno });
+            renderizarTabelas();
+            fecharModal('modal-escala');
+            e.target.reset();
+        }
+
+        function salvarNovoOperador(e) {
+            e.preventDefault();
+            const nome = document.getElementById('op-nome').value;
+            const email = document.getElementById('op-email').value;
+            const funcao = document.getElementById('op-funcao').value;
+            dbKinetiq.operadores.push({ id: `#0${dbKinetiq.operadores.length + 1}`, nome, email, funcao });
+            renderizarTabelas();
+            fecharModal('modal-operador');
+            e.target.reset();
+        }
+
+        function salvarNovoCliente(e) {
+            e.preventDefault();
+            const nome = document.getElementById('cli-nome').value;
+            const contato = document.getElementById('cli-contato').value;
+            const email = document.getElementById('cli-email').value;
+            dbKinetiq.clientes.push({ id: `#C${dbKinetiq.clientes.length + 1}`, nome, contato, email });
+            renderizarTabelas();
+            fecharModal('modal-cliente');
+            e.target.reset();
+        }
+
+        function salvarNovaReserva(e) {
+            e.preventDefault();
+            const equipamento = document.getElementById('res-equipamento').value;
+            const solicitante = document.getElementById('res-solicitante').value;
+            const periodo = document.getElementById('res-periodo').value;
+            dbKinetiq.reservas.push({ id: `#R${dbKinetiq.reservas.length + 1}`, equipamento, solicitante, periodo, status: "Reservado" });
+            renderizarTabelas();
+            fecharModal('modal-reserva');
+            e.target.reset();
+        }
+
+        function handleSearch() {
+            const termo = document.getElementById('input-search').value.toLowerCase();
+            if(!termo) { renderizarTabelas(); return; }
+            dbKinetiq.equipamentos = dbKinetiq.equipamentos.filter(e => e.nome.toLowerCase().includes(termo) || e.categoria.toLowerCase().includes(termo));
+            renderizarTabelas();
+        }
+
+        function switchLoginPortal(portal) {
+            document.querySelectorAll('.login-tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(portal === 'equipe') {
+                document.querySelectorAll('.login-tab-btn')[0].classList.add('active');
+                document.getElementById('portal-equipe').style.display = 'block';
+                document.getElementById('portal-admin').style.display = 'none';
+                document.getElementById('form-register-operator').style.display = 'none';
+                document.getElementById('form-register-admin').style.display = 'none';
+            } else {
+                document.querySelectorAll('.login-tab-btn')[1].classList.add('active');
+                document.getElementById('portal-admin').style.display = 'block';
+                document.getElementById('portal-equipe').style.display = 'none';
+                document.getElementById('form-register-operator').style.display = 'none';
+                document.getElementById('form-register-admin').style.display = 'none';
+            }
+        }
+
+        function toggleRegisterFormOperator(e, show) {
+            e.preventDefault();
+            document.getElementById('portal-equipe').style.display = show ? 'none' : 'block';
+            document.getElementById('form-register-operator').style.display = show ? 'block' : 'none';
+            document.getElementById('auth-tabs').style.display = show ? 'none' : 'flex';
+        }
+
+        function toggleRegisterFormAdmin(e, show) {
+            e.preventDefault();
+            document.getElementById('portal-admin').style.display = show ? 'none' : 'block';
+            document.getElementById('form-register-admin').style.display = show ? 'block' : 'none';
+            document.getElementById('auth-tabs').style.display = show ? 'none' : 'flex';
+        }
+
+        function handleEmailLogin(e) {
+            e.preventDefault();
+            entrarNoSistema("Carlos Silva", "Operador Técnico", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", "operator");
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            entrarNoSistema("Administrador Master", "Administrador", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150", "admin");
+        }
+
+        function handleRegisterOperator(e) { e.preventDefault(); alert("Registo concluído!"); toggleRegisterFormOperator(e, false); }
+        function handleRegisterAdmin(e) { e.preventDefault(); alert("Empresa registada!"); toggleRegisterFormAdmin(e, false); }
+
+        function entrarNoSistema(nome, cargo, avatar, role) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+            document.getElementById('user-name-display').innerText = nome;
+            document.getElementById('user-role-display').innerText = cargo;
+            document.getElementById('user-avatar').src = avatar;
+            if(role !== 'admin') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+            } else {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+            }
+            renderizarTabelas();
+        }
+
+        function logout() {
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+        }
+
+        function switchView(viewId, event) {
+            if(event) event.preventDefault();
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active-view');
+            const activeNav = document.querySelector(`.nav-item[data-target="${viewId}"]`);
+            if(activeNav) activeNav.classList.add('active');
+        }
+
+        function toggleNotifications(e) {
+            e.stopPropagation();
+            document.getElementById('notif-dropdown').classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.notification-btn') && !event.target.closest('.notifications-dropdown')) {
+                document.getElementById('notif-dropdown').classList.remove('show');
+            }
+        }
+
+        function toggleTheme() { document.body.classList.toggle('light-theme'); }
+
+        function abrirModalPerfil() {
+            document.getElementById('perfil-nome').value = document.getElementById('user-name-display').innerText;
+            document.getElementById('preview-avatar').src = document.getElementById('user-avatar').src;
+            abrirModal('modal-perfil');
+        }
+
+        function previewNovaFoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) { document.getElementById('preview-avatar').src = e.target.result; }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function salvarAlteracoesPerfil(event) {
+            event.preventDefault();
+            document.getElementById('user-name-display').innerText = document.getElementById('perfil-nome').value;
+            document.getElementById('user-avatar').src = document.getElementById('preview-avatar').src;
+            fecharModal('modal-perfil');
+        }
+
+        function exportarRelatorio(tipo) { alert("Relatório exportado com sucesso em formato " + tipo.toUpperCase()); }
+    </script>
 </body>
 </html>
